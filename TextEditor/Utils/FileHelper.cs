@@ -14,8 +14,6 @@ namespace TextEditor.Utils
             // Our own implementation because Path.GetFileName can fail if path has invalid characters,
             // however since files referred to in commits may have come from another platform where
             // those characters ARE valid, we have to cope with it
-            // https://jira.atlassian.com/browse/SRCTREEWIN-325
-
             if (path == null)
                 return null;
 
@@ -42,8 +40,6 @@ namespace TextEditor.Utils
             // or if the path of a file is too long
             // however since files referred to in commits may have come from another platform where
             // those characters ARE valid, we have to cope with it
-            // https://jira.atlassian.com/browse/SRCTREEWIN-325
-            // https://jira.atlassian.com/browse/SRCTREEWIN-490
             if (path == null)
                 return null;
 
@@ -74,7 +70,6 @@ namespace TextEditor.Utils
             // Our own implementation because GeneralHelper.CombinePath can fail if path has invalid characters,
             // however since files referred to in commits may have come from another platform where
             // those characters ARE valid, we have to cope with it
-            // https://jira.atlassian.com/browse/SRCTREEWIN-325
 
             try
             {
