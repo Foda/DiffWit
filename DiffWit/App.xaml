@@ -1,0 +1,33 @@
+﻿<Application
+    x:Class="DiffWit.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:DiffWit"
+    xmlns:view="using:DiffWit.View"
+    xmlns:utils="using:DiffWit.Utils"
+    RequestedTheme="Dark">
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <Color x:Key="TitleMainColor">#3D353F</Color>
+            
+            <AcrylicBrush x:Key="GutterAcrylic" BackgroundSource="HostBackdrop"
+                          TintColor="{ThemeResource SystemChromeLowColor}"
+                          FallbackColor="#333333" TintOpacity="0.6" />
+
+            <AcrylicBrush x:Key="ThemeAcrylicMain" BackgroundSource="HostBackdrop"
+                          TintColor="{StaticResource TitleMainColor}" TintOpacity="0.8" 
+                          FallbackColor="{StaticResource TitleMainColor}"/>
+
+            <utils:ImplicitDataTemplateConverter x:Key="ImplicitDataTemplateConverter"/>
+
+            <DataTemplate x:Key="SplitDiffViewModel">
+                <view:SplitDiffView />
+            </DataTemplate>
+
+            <DataTemplate x:Key="UnifiedDiffViewModel">
+                <view:UnifiedDiffView />
+            </DataTemplate>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
