@@ -6,7 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:DiffWit.Controls"
-    xmlns:controls1="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:toolkit="using:Microsoft.Toolkit.Uwp.UI.Controls"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
@@ -16,32 +16,46 @@
             <RowDefinition Height="48" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="64"/>
+        </Grid.ColumnDefinitions>
 
-        <ScrollViewer VerticalScrollBarVisibility="Visible" Grid.Row="1">
+        <ScrollViewer VerticalScrollBarVisibility="Visible" Grid.Row="1"
+                      Grid.Column="0">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="8"/>
+                    <ColumnDefinition Width="4"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- Left -->
                 <controls:TextControl Text="{Binding LeftDiffTextModel}" Grid.Row="1" x:Name="TextRootLeft"
-                                      Grid.Column="0"/>
+                                      Grid.Column="0" DiffMap="{Binding ElementName=DiffMapRoot}"/>
+
+                <toolkit:GridSplitter Grid.Column="1" Width="4" VerticalAlignment="Stretch"
+                                      ResizeDirection="Auto" Background="#333333"/>
 
                 <!-- Right -->
                 <controls:TextControl Text="{Binding RightDiffTextModel}" Grid.Row="1" x:Name="TextRootRight"
-                                      Grid.Column="2"/>
+                                      Grid.Column="2" DiffMap="{Binding ElementName=DiffMapRoot}"/>
             </Grid>
         </ScrollViewer>
 
-        <controls1:DropShadowPanel BlurRadius="10" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                   HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
-                                   OffsetX="0" OffsetY="4" Color="Black" ShadowOpacity="0.3">
+        <controls:DiffMapScrollControl Grid.Row="1" Grid.Column="1" x:Name="DiffMapRoot"
+                                       HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                       LeftTextView="{Binding ElementName=TextRootLeft}"
+                                       RightTextView="{Binding ElementName=TextRootRight}"/>
+
+        <toolkit:DropShadowPanel BlurRadius="10" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                 HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
+                                 OffsetX="0" OffsetY="4" Color="Black" ShadowOpacity="0.3"
+                                 Grid.ColumnSpan="2">
             <Grid Background="#333337">
                 <TextBlock VerticalAlignment="Center" Margin="16,0,0,0" Text="{Binding FileA, FallbackValue=Text}"
-                           Style="{ThemeResource NavigationViewItemHeaderTextStyle}" HorizontalAlignment="Left"/>
+                           Style="{ThemeResource CaptionTextBlockStyle}" HorizontalAlignment="Left"/>
             </Grid>
-        </controls1:DropShadowPanel>
+        </toolkit:DropShadowPanel>
     </Grid>
 </UserControl>

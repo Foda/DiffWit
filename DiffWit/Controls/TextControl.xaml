@@ -17,15 +17,12 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <Border Grid.Column="0" Background="{ThemeResource GutterAcrylic}">
+        <Border Grid.Column="0" Background="{StaticResource ThemeBrushMain}">
             <local:GutterControl x:Name="GutterRoot" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
         </Border>
 
-        <controls:DropShadowPanel BlurRadius="10" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                  HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
-                                  OffsetX="-4" OffsetY="0" Color="Black" ShadowOpacity="0.3">
-            <canvas:CanvasVirtualControl x:Name="CanvasRoot" RegionsInvalidated="canvas_RegionsInvalidated"
-                                         VerticalAlignment="Top" HorizontalAlignment="Stretch"/>
-        </controls:DropShadowPanel>
+        <canvas:CanvasVirtualControl x:Name="CanvasRoot" RegionsInvalidated="canvas_RegionsInvalidated"
+                                     VerticalAlignment="Top" HorizontalAlignment="Stretch"
+                                     Grid.Column="1"/>
     </Grid>
 </UserControl>

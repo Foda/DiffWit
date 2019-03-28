@@ -1,4 +1,5 @@
-﻿using Microsoft.Graphics.Canvas;
+﻿using DiffWit.Utils;
+using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Brushes;
 using Microsoft.Graphics.Canvas.Text;
 using Microsoft.Graphics.Canvas.UI.Xaml;
@@ -16,7 +17,7 @@ namespace DiffWit.Controls
     public sealed partial class TextControl : UserControl
     {
         private Windows.UI.Color _defaultBackgroundColor = Windows.UI.Color.FromArgb(255, 30, 30, 30);
-        private Windows.UI.Color _defaultForegroundColor = Windows.UI.Color.FromArgb(255, 200, 200, 200);
+        private Windows.UI.Color _defaultForegroundColor = Windows.UI.Color.FromArgb(255, 245, 245, 245);
 
         private Windows.UI.Color _addedBackgroundColor = Windows.UI.Color.FromArgb(255, 21, 53, 44);
         private Windows.UI.Color _removedBackgroundColor = Windows.UI.Color.FromArgb(255, 45, 0, 0);
@@ -34,6 +35,7 @@ namespace DiffWit.Controls
         private const int WidthPadding = 8;
 
         private CanvasTextFormat _textFormat;
+        private ScrollViewer _parentScrollViewer;
 
         public static readonly DependencyProperty TextProperty =
             DependencyProperty.Register(nameof(Text), typeof(ITextModel), typeof(TextControl),
@@ -51,10 +53,20 @@ namespace DiffWit.Controls
             textView.UpdateText();
         }
 
+        public static readonly DependencyProperty DiffMapProperty =
+            DependencyProperty.Register(nameof(DiffMap), typeof(DiffMapScrollControl), typeof(TextControl),
+                new PropertyMetadata(default(DiffMapScrollControl)));
+
+        public DiffMapScrollControl DiffMap
+        {
+            get { return (DiffMapScrollControl)GetValue(DiffMapProperty); }
+            set { SetValue(DiffMapProperty, value); }
+        }
+
         public TextControl()
         {
             this.InitializeComponent();
-            
+
             _textFormat = new CanvasTextFormat
             {
                 FontFamily = "Consolas",
@@ -88,7 +100,56 @@ namespace DiffWit.Controls
                 CanvasRoot.Invalidate();
             };
         }
-        
+
+        public int VisibleTopLine
+        {
+            get
+            {
+                if (_parentScrollViewer == null)
+                    return 0;
+
+                int startLine = (int)(_parentScrollViewer.VerticalOffset / LineHeight);
+                int endLine = (int)Math.Min(
+                    (_parentScrollViewer.VerticalOffset + _parentScrollViewer.ViewportHeight) / LineHeight, Text.LineCount - 1);
+
+
+                for (int i = startLine; i < endLine; i++)
+                {
+                    if (Text.GetLine(i) is DiffTextLine diffText)
+                    {
+                        if (diffText.ChangeType != DiffLineType.Empty)
+                            return diffText.LineNo;
+                    }
+                }
+
+                return 0;
+            }
+        }
+
+        public int VisibleBottomLine
+        {
+            get
+            {
+                if (_parentScrollViewer == null)
+                    return 0;
+
+                int startLine = (int)(_parentScrollViewer.VerticalOffset / LineHeight);
+                int endLine = (int)Math.Min(
+                    (_parentScrollViewer.VerticalOffset + _parentScrollViewer.ViewportHeight) / LineHeight, Text.LineCount - 1);
+
+                for (int i = endLine; i > startLine; i--)
+                {
+                    if (Text.GetLine(i) is DiffTextLine diffText)
+                    {
+                        if (diffText.ChangeType != DiffLineType.Empty)
+                            return diffText.LineNo;
+                    }
+                }
+
+                return 0;
+            }
+        }
+
         internal void UpdateText()
         {
             CanvasRoot.Height = Text.LineCount * LineHeight;
@@ -96,12 +157,55 @@ namespace DiffWit.Controls
 
             GutterRoot.Text = this.Text;
             GutterRoot.UpdateHeight(CanvasRoot.Height);
+
+            if (DiffMap != null)
+            {
+                DiffMap.UpdateTextViews();
+            }
+
+            Text.ScrollToLineRequested -= Text_ScrollToLineRequested;
+            Text.ScrollToLineRequested += Text_ScrollToLineRequested;
+        }
+
+        private void Text_ScrollToLineRequested(object sender, ITextLine line)
+        {
+            if (_parentScrollViewer == null)
+            {
+                return;
+            }
+
+            var lineIndex = Text.GetLineNo(line);
+            var verticalOffset = lineIndex / LineHeight;
+
+            _parentScrollViewer.ChangeView(null, verticalOffset, null);
         }
 
         private void canvas_RegionsInvalidated(CanvasVirtualControl sender, CanvasRegionsInvalidatedEventArgs args)
         {
             if (Text == null)
                 return;
+
+            // Update the diff map
+            if (_parentScrollViewer == null)
+            {
+                _parentScrollViewer = VisualTreeHelper.FindParent<ScrollViewer>(this);
+                if (_parentScrollViewer != null)
+                {
+                    _parentScrollViewer.ViewChanged += (s, e) =>
+                    {
+                        if (DiffMap != null)
+                        {
+                            DiffMap.UpdateTextViews();
+                        }
+                    };
+
+                    // Force update once
+                    if (DiffMap != null)
+                    {
+                        DiffMap.UpdateTextViews();
+                    }
+                }
+            }
 
             foreach (var region in args.InvalidatedRegions)
             {

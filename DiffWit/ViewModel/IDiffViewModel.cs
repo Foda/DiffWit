@@ -9,5 +9,7 @@ namespace DiffWit.ViewModel
     public interface IDiffViewModel
     {
         void ProcessDiff();
+
+        int ChangeCount { get; }
     }
 }

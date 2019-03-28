@@ -47,6 +47,23 @@
             </DropDownButton.Flyout>
         </DropDownButton>
 
+        <StackPanel Orientation="Horizontal" Grid.Row="0" HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom" Height="32" Padding="0,0,16,0">
+            <TextBlock VerticalAlignment="Center">
+                <Run Text="Changes: "/> <Run Text="{Binding ChangeCount}"/>
+            </TextBlock>
+
+            <Button Style="{ThemeResource ButtonRevealStyle}" Margin="16,0,0,0"
+                    Background="Transparent" Command="{Binding ScrollToPreviousChange}">
+                <FontIcon Glyph="&#xE014;" FontFamily="Segoe MDL2 Assets" FontSize="14"/>
+            </Button>
+
+            <Button Style="{ThemeResource ButtonRevealStyle}" Margin="0,0,0,0"
+                    Background="Transparent" Command="{Binding ScrollToNextChange}">
+                <FontIcon Glyph="&#xE015;" FontFamily="Segoe MDL2 Assets" FontSize="14"/>
+            </Button>
+        </StackPanel>
+
         <ContentControl VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                         VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch"
                         Grid.Row="1" x:Name="TextMain"

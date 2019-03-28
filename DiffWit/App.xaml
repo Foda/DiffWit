@@ -9,15 +9,12 @@
 
     <Application.Resources>
         <ResourceDictionary>
-            <Color x:Key="TitleMainColor">#3D353F</Color>
+            <Color x:Key="ThemeColorMain">#202527</Color>
+            <SolidColorBrush x:Key="ThemeBrushMain" Color="{StaticResource ThemeColorMain}"/>
             
-            <AcrylicBrush x:Key="GutterAcrylic" BackgroundSource="HostBackdrop"
-                          TintColor="{ThemeResource SystemChromeLowColor}"
-                          FallbackColor="#333333" TintOpacity="0.6" />
-
             <AcrylicBrush x:Key="ThemeAcrylicMain" BackgroundSource="HostBackdrop"
-                          TintColor="{StaticResource TitleMainColor}" TintOpacity="0.8" 
-                          FallbackColor="{StaticResource TitleMainColor}"/>
+                          TintColor="{StaticResource ThemeColorMain}" TintOpacity="0.8" 
+                          FallbackColor="{StaticResource ThemeColorMain}"/>
 
             <utils:ImplicitDataTemplateConverter x:Key="ImplicitDataTemplateConverter"/>
 

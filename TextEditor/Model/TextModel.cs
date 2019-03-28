@@ -7,10 +7,26 @@ namespace TextEditor.Model
 {
     public abstract class TextModel : ITextModel
     {
+        internal List<IAnchorPos> _anchors = new List<IAnchorPos>();
+
         internal List<ITextLine> _lines = new List<ITextLine>();
         protected List<ITextLine> Lines => _lines;
 
         public int LineCount => _lines.Count;
+
+        public int ValidLineCount
+        {
+            get
+            {
+                return _lines.Where(line =>
+                {
+                    var diffLine = line as DiffTextLine;
+                    return diffLine != null && diffLine.ChangeType != DiffLineType.Empty;
+                }).Count();
+            }
+        }
+
+        public event EventHandler<ITextLine> ScrollToLineRequested;
 
         public ITextLine GetLine(int index)
         {
@@ -43,6 +59,23 @@ namespace TextEditor.Model
             Lines.Insert(index, line);
         }
         
+        public IAnchorPos CreateAnchor(ITextLine line)
+        {
+            var anchor = new BasicAnchor(line);
+            _anchors.Add(anchor);
+
+            return anchor;
+        }
+
+        public void ScrollToAnchor(IAnchorPos anchor)
+        {
+            var evt = ScrollToLineRequested;
+            if (evt != null)
+            {
+                evt.Invoke(this, anchor.AdornedLine);
+            }
+        }
+
         public override string ToString()
         {
             var newLine = "\r\n";

@@ -8,6 +8,21 @@ using TextEditor.Utils;
 
 namespace TextEditor.Diff
 {
+    public struct SplitDiffModel
+    {
+        public DiffTextModel SideA { get; }
+        public DiffTextModel SideB { get; }
+        public List<IAnchorPos> DiffAnchors { get; }
+
+        public SplitDiffModel(DiffTextModel sideA, DiffTextModel sideB,
+            List<IAnchorPos> diffAnchors)
+        {
+            SideA = sideA;
+            SideB = sideB;
+            DiffAnchors = diffAnchors;
+        }
+    }
+
     public class DiffFactory
     {
         public static List<Diff> GenerateDiffCache(string textA, string textB)
@@ -68,14 +83,20 @@ namespace TextEditor.Diff
             return textModel;
         }
         
-        public static Tuple<DiffTextModel, DiffTextModel> GenerateSplitDiff(List<Diff> diffs)
+        public static SplitDiffModel GenerateSplitDiff(List<Diff> diffs)
         {
             // Generate the model
             var sideABuffer = new List<DiffTextLine>();
             var sideBBuffer = new List<DiffTextLine>();
-            
+           
+            var sideAModel = new DiffTextModel();
+            var sideBModel = new DiffTextModel();
+
+            var diffAnchors = new List<IAnchorPos>();
+
             foreach (var d in diffs)
             {
+                bool hasAddedDiffAnchor = false;
                 foreach (var line in d.text.SplitToLines())
                 {
                     switch (d.operation)
@@ -83,7 +104,14 @@ namespace TextEditor.Diff
                         case Operation.DELETE:
                             {
                                 // removed on left
-                                sideABuffer.Add(new DiffTextLine(line, DiffLineType.Remove));
+                                var newLine = new DiffTextLine(line, DiffLineType.Remove);
+                                sideABuffer.Add(newLine);
+
+                                if (!hasAddedDiffAnchor)
+                                {
+                                    diffAnchors.Add(sideAModel.CreateAnchor(newLine));
+                                    hasAddedDiffAnchor = true;
+                                }
                             }
                             break;
                         case Operation.EQUAL:
@@ -95,7 +123,14 @@ namespace TextEditor.Diff
                         case Operation.INSERT:
                             {
                                 // added on the right
-                                sideBBuffer.Add(new DiffTextLine(line, DiffLineType.Insert));
+                                var newLine = new DiffTextLine(line, DiffLineType.Insert);
+                                sideBBuffer.Add(newLine);
+
+                                if (!hasAddedDiffAnchor)
+                                {
+                                    diffAnchors.Add(sideBModel.CreateAnchor(newLine));
+                                    hasAddedDiffAnchor = true;
+                                }
                             }
                             break;
                     }
@@ -104,10 +139,7 @@ namespace TextEditor.Diff
 
             // Add empty space for lines on the left were added but we don't have a
             // removal on our side
-            var sideAModel = new DiffTextModel();
-            var sideBModel = new DiffTextModel();
-
-            var emptyTextLine = new DiffTextLine("?", DiffLineType.Empty);
+            var emptyTextLine = new DiffTextLine("", DiffLineType.Empty);
 
             int leftLineNo = 0;
             int rightLineNo = 0;
@@ -187,7 +219,7 @@ namespace TextEditor.Diff
                 }
             }
 
-            return new Tuple<DiffTextModel, DiffTextModel>(sideAModel, sideBModel);
+            return new SplitDiffModel(sideAModel, sideBModel, diffAnchors);
         }
     }
 }
