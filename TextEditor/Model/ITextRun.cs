@@ -7,7 +7,5 @@ namespace TextEditor.Model
     public interface ITextRun
     {
         string Text { get; }
-
-        ITextDecoration Decoration { get; }
     }
 }

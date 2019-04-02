@@ -24,10 +24,12 @@
                    Text="DiffWit" Margin="16,8,0,0" VerticalAlignment="Top"/>
 
 
-        <DropDownButton VerticalAlignment="Bottom" Grid.Row="0" Background="Transparent">
+        <DropDownButton VerticalAlignment="Bottom" Grid.Row="0" Background="Transparent"
+                        x:Name="ViewMode">
             <StackPanel Orientation="Horizontal">
-                <FontIcon Glyph="&#xF30A;" FontFamily="Fabric MDL2 Assets" />
-                <TextBlock Text="Split" FontSize="12" Margin="8,0,8,0" VerticalAlignment="Center"/>
+                <FontIcon Glyph="&#xF30A;" FontFamily="Fabric MDL2 Assets" x:Name="SelectedViewIcon"/>
+                <TextBlock Text="Split" FontSize="12" Margin="8,0,8,0" VerticalAlignment="Center"
+                           x:Name="SelectedViewText"/>
             </StackPanel>
             
             <DropDownButton.Flyout>
@@ -68,5 +70,9 @@
                         VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch"
                         Grid.Row="1" x:Name="TextMain"
                         ContentTemplate="{Binding Converter={StaticResource ImplicitDataTemplateConverter}}"/>
+
+        <ProgressRing Grid.Row="1" HorizontalAlignment="Center"
+                      Width="64" Height="64"
+                      VerticalAlignment="Center" x:Name="Loading"/>
     </Grid>
 </Page>

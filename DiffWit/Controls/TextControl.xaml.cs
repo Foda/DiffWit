@@ -1,14 +1,15 @@
-﻿using DiffWit.Utils;
+﻿using ColorCode;
+using ColorCode.Styling;
+using DiffWit.Utils;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Brushes;
 using Microsoft.Graphics.Canvas.Text;
 using Microsoft.Graphics.Canvas.UI.Xaml;
 using System;
-using System.Linq;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Text;
 using TextEditor.Model;
-using Windows.Foundation;
-using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
@@ -16,6 +17,9 @@ namespace DiffWit.Controls
 {
     public sealed partial class TextControl : UserControl
     {
+        private DiffViewTextColorizer _colorizer = new DiffViewTextColorizer(StyleDictionary.DefaultDark);
+        private ILanguage _language;
+
         private Windows.UI.Color _defaultBackgroundColor = Windows.UI.Color.FromArgb(255, 30, 30, 30);
         private Windows.UI.Color _defaultForegroundColor = Windows.UI.Color.FromArgb(255, 245, 245, 245);
 
@@ -61,6 +65,15 @@ namespace DiffWit.Controls
         {
             get { return (DiffMapScrollControl)GetValue(DiffMapProperty); }
             set { SetValue(DiffMapProperty, value); }
+        }
+
+        public static readonly DependencyProperty FileExtensionProperty =
+            DependencyProperty.Register(nameof(FileExtension), typeof(string), typeof(TextControl), new PropertyMetadata(""));
+
+        public string FileExtension
+        {
+            get { return (string)GetValue(FileExtensionProperty); }
+            set { SetValue(FileExtensionProperty, value); }
         }
 
         public TextControl()
@@ -175,7 +188,7 @@ namespace DiffWit.Controls
             }
 
             var lineIndex = Text.GetLineNo(line);
-            var verticalOffset = lineIndex / LineHeight;
+            var verticalOffset = lineIndex * LineHeight;
 
             _parentScrollViewer.ChangeView(null, verticalOffset, null);
         }
@@ -205,6 +218,11 @@ namespace DiffWit.Controls
                         DiffMap.UpdateTextViews();
                     }
                 }
+            }
+
+            if (_language == null)
+            {
+                _language = Languages.FindById(FileExtension);
             }
 
             foreach (var region in args.InvalidatedRegions)
@@ -238,7 +256,6 @@ namespace DiffWit.Controls
                     using (var canvasText = new CanvasTextLayout(ds, stringRegion.ToString(), _textFormat, 9999, (float)region.Height))
                     {
                         // Handle the diff line background colors
-                        // TODO: use the ITextDecoration interface
                         int index = 0;
                         for (int i = startLine; i < endLine; i++)
                         {
@@ -251,13 +268,19 @@ namespace DiffWit.Controls
                                     case DiffLineType.Insert:
                                         {
                                             ds.FillRectangle(0, i * LineHeight, (float)this.ActualWidth, MathF.Ceiling(LineHeight), _addedBackgroundColor);
-                                            canvasText.SetBrush(index, line.Length, _addedForegroundBrush);
+                                            if (_language == null)
+                                            {
+                                                canvasText.SetBrush(index, line.Length, _addedForegroundBrush);
+                                            }
                                         }
                                         break;
                                     case DiffLineType.Remove:
                                         {
                                             ds.FillRectangle(0, i * LineHeight, (float)this.ActualWidth, MathF.Ceiling(LineHeight), _removedBackgroundColor);
-                                            canvasText.SetBrush(index, line.Length, _removedForegroundBrush);
+                                            if (_language == null)
+                                            {
+                                                canvasText.SetBrush(index, line.Length, _removedForegroundBrush);
+                                            }
                                         }
                                         break;
                                     case DiffLineType.Empty:
@@ -273,7 +296,13 @@ namespace DiffWit.Controls
 
                             index += line.Length + 2; // add for newline
                         }
-                        
+
+                        // Syntax highlight
+                        if (_language != null)
+                        {
+                            _colorizer.FormatLine(_language, CanvasRoot, canvasText, stringRegion.ToString());
+                        }
+
                         // Draw the text
                         ds.DrawTextLayout(canvasText, 0, startLine * LineHeight, _defaultForegroundBrush);
                     }

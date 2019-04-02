@@ -1,4 +1,7 @@
-﻿using Microsoft.Toolkit.Uwp.Helpers;
+﻿using ColorCode;
+using ColorCode.Styling;
+using DiffWit.Utils;
+using Microsoft.Toolkit.Uwp.Helpers;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -23,6 +26,11 @@ namespace DiffWit.ViewModel
         public string FileA { get; }
         public string FileB { get; }
 
+        public string FileExtension
+        {
+            get { return Path.GetExtension(FileA).Remove(0, 1); }
+        }
+
         private TextModel _leftDiffTextModel;
         public TextModel LeftDiffTextModel
         {
@@ -46,6 +54,7 @@ namespace DiffWit.ViewModel
         {
             FileA = fileA;
             FileB = fileB;
+
             _diffCache = diffCache;
 
             ScrollToPreviousChange = ReactiveCommand.Create(ScrollToPreviousChange_Impl);

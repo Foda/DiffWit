@@ -8,8 +8,6 @@ namespace TextEditor.Model
     {
         public string Text { get; }
 
-        public ITextDecoration Decoration { get; }
-
         public TextRun(string text)
         {
             Text = text;

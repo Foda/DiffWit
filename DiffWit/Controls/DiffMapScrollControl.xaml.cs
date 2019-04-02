@@ -4,9 +4,11 @@ using Microsoft.Graphics.Canvas.Geometry;
 using Microsoft.Graphics.Canvas.Text;
 using Microsoft.Graphics.Canvas.UI.Xaml;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using System.Threading.Tasks;
 using TextEditor.Model;
 using Windows.Foundation;
 using Windows.UI;
@@ -18,7 +20,7 @@ namespace DiffWit.Controls
     public sealed partial class DiffMapScrollControl : UserControl
     {
         private Windows.UI.Color _fileSizeColor = Windows.UI.Color.FromArgb(255, 37, 41, 37);
-        private Windows.UI.Color _lassoColor = Windows.UI.Color.FromArgb(255, 140, 140, 140);
+        private Windows.UI.Color _lassoColor = Windows.UI.Color.FromArgb(255, 165, 165, 165);
 
         private Windows.UI.Color _addedBackgroundColor = Windows.UI.Color.FromArgb(255, 60, 193, 160);
         private Windows.UI.Color _removedBackgroundColor = Windows.UI.Color.FromArgb(255, 229, 78, 55);
@@ -27,6 +29,12 @@ namespace DiffWit.Controls
         private double _rightFileTop = 0;
         private double _leftFileHeight = 0;
         private double _rightFileHeight = 0;
+
+        private CanvasCachedGeometry _outlineChangesAdded;
+        private CanvasCachedGeometry _outlineChangesRemoved;
+
+        private bool _requestedOutlineChangesRefresh = false;
+        private Task _loadOutlineChangesTask;
 
         public static readonly DependencyProperty LeftTextViewProperty =
             DependencyProperty.Register(nameof(LeftTextView), typeof(TextControl), typeof(DiffMapScrollControl),
@@ -77,17 +85,48 @@ namespace DiffWit.Controls
         {
             this.InitializeComponent();
 
+            CanvasRoot.CreateResources += CanvasRoot_CreateResources;
             CanvasRoot.SizeChanged += (s, e) =>
             {
                 CanvasRoot.Invalidate();
             };
         }
 
+        private void CanvasRoot_CreateResources(CanvasControl sender, Microsoft.Graphics.Canvas.UI.CanvasCreateResourcesEventArgs args)
+        {
+            args.TrackAsyncAction(CreateResourcesAsync(sender).AsAsyncAction());
+        }
+
+        private async Task CreateResourcesAsync(CanvasControl sender)
+        {
+            if (_loadOutlineChangesTask != null)
+            {
+                await _loadOutlineChangesTask;
+                _loadOutlineChangesTask = null;
+                _requestedOutlineChangesRefresh = false;
+            }
+
+            if (_requestedOutlineChangesRefresh)
+            {
+                // We must grab these objects now and pass them
+                // otherwise we'll run into threading issues
+                var leftText = LeftTextView.Text;
+                var rightText = RightTextView.Text;
+                var height = RealHeight;
+
+                _loadOutlineChangesTask = Task.Run(() => 
+                    UpdateOutlineChanges(sender, leftText, rightText, height));
+            }
+        }
+
         public void UpdateTextViews()
         {
             if (LeftTextView != null && RightTextView != null)
             {
+                _requestedOutlineChangesRefresh = true;
+
                 UpdateFileSizes();
+
                 CanvasRoot.Invalidate();
             }
         }
@@ -122,42 +161,98 @@ namespace DiffWit.Controls
             _rightFileHeight = Math.Ceiling(rightHeight + rightOffset) - _rightFileTop;
         }
 
-        private void DrawOutlineChanges(CanvasDrawingSession ds)
+        private void UpdateOutlineChanges(ICanvasResourceCreator canvas,
+            ITextModel leftControl, ITextModel rightControl, double controlHeight)
         {
-            int lineCountOrg = LeftTextView.Text.ValidLineCount;
-            int lineCountCur = RightTextView.Text.ValidLineCount;
+            int lineCountOrg = leftControl.ValidLineCount;
+            int lineCountCur = rightControl.ValidLineCount;
             int maxLineCount = Math.Max(lineCountOrg, lineCountCur);
 
-            int singleOrgLineHeight = (int)(RealHeight / lineCountOrg);
-            int singleCurLineHeight = (int)(RealHeight / lineCountCur);
+            int singleOrgLineHeight = (int)(controlHeight / lineCountOrg);
+            int singleCurLineHeight = (int)(controlHeight / lineCountCur);
+
+            var removedGeo = new List<CanvasGeometry>();
+            var addedGeo = new List<CanvasGeometry>();
 
             // Draw removals
-            for (int i = 0; i < LeftTextView.Text.LineCount; i++)
+            for (int i = 0; i < leftControl.LineCount; i++)
             {
-                var textLine = LeftTextView.Text.GetLine(i);
+                var textLine = leftControl.GetLine(i);
                 if (textLine is DiffTextLine diffLine)
                 {
                     if (diffLine.ChangeType == DiffLineType.Remove)
                     {
-                        int ypos = (int)((double)diffLine.LineNo / maxLineCount * RealHeight);
-                        ds.FillRectangle(new Rect(12.0, ypos + (int)_leftFileTop, 16.0, singleOrgLineHeight + 1),
-                            _removedBackgroundColor);
+                        int ypos = (int)((double)diffLine.LineNo / maxLineCount * controlHeight);
+
+                        removedGeo.Add(CanvasGeometry.CreateRectangle(canvas,
+                            new Rect(12.0, ypos + (int)_leftFileTop, 16.0, singleOrgLineHeight + 1)));
                     }
                 }
             }
 
-            for (int i = 0; i < RightTextView.Text.LineCount; i++)
+            for (int i = 0; i < rightControl.LineCount; i++)
             {
-                var textLine = RightTextView.Text.GetLine(i);
+                var textLine = rightControl.GetLine(i);
 
                 if (textLine is DiffTextLine diffLine)
                 {
                     if (diffLine.ChangeType == DiffLineType.Insert)
                     {
-                        int ypos = (int)((double)diffLine.LineNo / maxLineCount * RealHeight);
-                        ds.FillRectangle(new Rect(40.0, ypos + (int)_rightFileTop, 16.0, singleCurLineHeight + 1),
-                            _addedBackgroundColor);
+                        int ypos = (int)((double)diffLine.LineNo / maxLineCount * controlHeight);
+
+                        addedGeo.Add(CanvasGeometry.CreateRectangle(canvas,
+                            new Rect(40.0, ypos + (int)_rightFileTop, 16.0, singleCurLineHeight + 1)));
                     }
+                }
+            }
+
+            // Save the results into a cached geo
+            var groupedRemovedGeo = CanvasGeometry.CreateGroup(canvas, removedGeo.ToArray());
+            var groupedAddedGeo = CanvasGeometry.CreateGroup(canvas, addedGeo.ToArray());
+
+            _outlineChangesRemoved = CanvasCachedGeometry.CreateFill(groupedRemovedGeo);
+            _outlineChangesAdded = CanvasCachedGeometry.CreateFill(groupedAddedGeo);
+        }
+
+        private void CanvasRoot_Draw(CanvasControl sender, CanvasDrawEventArgs args)
+        {
+            using (var ds = args.DrawingSession)
+            {
+                if (LeftTextView != null && RightTextView != null)
+                {
+                    ds.Clear(Colors.Transparent);
+
+                    var stroke = new CanvasStrokeStyle();
+
+                    // Draw file sizes
+                    ds.FillRectangle(new Rect(12.0, _leftFileTop, 16.0, _leftFileHeight), _fileSizeColor);
+                    ds.FillRectangle(new Rect(40.0, _rightFileTop, 16.0, _rightFileHeight), _fileSizeColor);
+
+                    // Draw changes
+                    if (_outlineChangesRemoved != null && _outlineChangesAdded != null)
+                    {
+                        ds.DrawCachedGeometry(_outlineChangesRemoved, _removedBackgroundColor);
+                        ds.DrawCachedGeometry(_outlineChangesAdded, _addedBackgroundColor);
+                    }
+
+                    var maxLineCount = Math.Max(LeftTextView.Text.ValidLineCount, RightTextView.Text.ValidLineCount);
+
+                    // Left side
+                    var leftTop = (float)Math.Max(Math.Floor((float)LeftTextView.VisibleTopLine / maxLineCount * RealHeight + _leftFileTop), _leftFileTop);
+
+                    var leftBottomOffset = (float)Math.Min(
+                        Math.Ceiling((float)LeftTextView.VisibleBottomLine / maxLineCount * RealHeight + _leftFileTop), 
+                        _leftFileTop + _leftFileHeight);
+                    
+                    // Right side
+                    var rightTop = (float)Math.Max(Math.Floor((float)RightTextView.VisibleTopLine / maxLineCount * RealHeight + _rightFileTop), _rightFileTop);
+
+                    var rightBottomOffset = (float)Math.Min(
+                        Math.Ceiling((float)RightTextView.VisibleBottomLine / maxLineCount * RealHeight + _rightFileTop), 
+                        _rightFileTop + _rightFileHeight);
+
+                    // Visible area outline
+                    DrawFileViewLasso(ds, leftTop, leftBottomOffset - leftTop, rightTop, rightBottomOffset - rightTop);
                 }
             }
         }
@@ -167,8 +262,8 @@ namespace DiffWit.Controls
         {
             var pathBuilder = new CanvasPathBuilder(ds);
 
-            float num1 = Math.Min(4.0f, leftHeight * 0.5f);
-            float num2 = Math.Min(4.0f, rightHeight * 0.5f);
+            float num1 = Math.Min(4.0f, leftHeight * 0.5f);  // bezier curve control point
+            float num2 = Math.Min(4.0f, rightHeight * 0.5f); // bezier curve control point
             float y1 = leftTop + leftHeight;
             float y2 = rightTop + rightHeight;
 
@@ -188,39 +283,6 @@ namespace DiffWit.Controls
 
             var finalGeo = CanvasGeometry.CreatePath(pathBuilder);
             ds.DrawGeometry(finalGeo, _lassoColor);
-        }
-
-        private void CanvasRoot_Draw(CanvasControl sender, CanvasDrawEventArgs args)
-        {
-            using (var ds = args.DrawingSession)
-            {
-                if (LeftTextView != null && RightTextView != null)
-                {
-                    ds.Clear(Colors.Transparent);
-
-                    var stroke = new CanvasStrokeStyle();
-
-                    // draw file sizes for left + right
-                    ds.FillRectangle(new Rect(12.0, _leftFileTop, 16.0, _leftFileHeight), _fileSizeColor);
-                    ds.FillRectangle(new Rect(40.0, _rightFileTop, 16.0, _rightFileHeight), _fileSizeColor);
-
-                    // draw changes
-                    DrawOutlineChanges(ds);
-
-                    var maxLineCount = Math.Max(LeftTextView.Text.ValidLineCount, RightTextView.Text.ValidLineCount);
-
-                    //Left side
-                    var leftTop = (float)Math.Max(Math.Floor((float)LeftTextView.VisibleTopLine / maxLineCount * RealHeight + _leftFileTop), _leftFileTop);
-                    var leftBottomOffset = (float)Math.Min(Math.Ceiling((float)LeftTextView.VisibleBottomLine / maxLineCount * RealHeight + _leftFileTop), _leftFileTop + _leftFileHeight);
-                    // 
-                    
-                    //Right side
-                    var rightTop = (float)Math.Max(Math.Floor((float)RightTextView.VisibleTopLine / maxLineCount * RealHeight + _rightFileTop), _rightFileTop);
-                    var rightBottomOffset = (float)Math.Min(Math.Ceiling((float)RightTextView.VisibleBottomLine / maxLineCount * RealHeight + _rightFileTop), _rightFileTop + _rightFileHeight);
-
-                    DrawFileViewLasso(ds, leftTop, leftBottomOffset - leftTop, rightTop, rightBottomOffset - rightTop);
-                }
-            }
         }
     }
 }

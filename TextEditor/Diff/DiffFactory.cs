@@ -143,12 +143,12 @@ namespace TextEditor.Diff
 
             int leftLineNo = 0;
             int rightLineNo = 0;
-            int totalCount = Math.Max(sideABuffer.Count, sideBBuffer.Count);
 
             DiffTextLine leftLine = null;
             DiffTextLine rightLine = null;
 
-            for (int i = 0; i < totalCount; i++)
+            // Make sure we visit every line 
+            while (leftLineNo < sideABuffer.Count && rightLineNo < sideBBuffer.Count)
             {
                 leftLine = leftLineNo < sideABuffer.Count ? sideABuffer[leftLineNo] : null;
                 rightLine = rightLineNo < sideBBuffer.Count ? sideBBuffer[rightLineNo] : null;

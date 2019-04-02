@@ -37,6 +37,8 @@ namespace DiffWit
             var commandLineParams = e.Parameter as ParsedCommands;
             if (commandLineParams != null)
             {
+                Loading.IsActive = true;
+
                 var workingDirectory = commandLineParams.FirstOrDefault(param => param.Key == "WorkingDir").Value;
                 var localFile = commandLineParams.FirstOrDefault(param => param.Key == "Local").Value;
                 var remoteFile = commandLineParams.FirstOrDefault(param => param.Key == "Remote").Value;
@@ -50,6 +52,8 @@ namespace DiffWit
                 _splitDiffViewModel = new SplitDiffViewModel(fileA, fileB, _diffCache);
                 
                 SetDiffViewModel(_splitDiffViewModel);
+
+                Loading.IsActive = false;
             }
         }
 
@@ -86,14 +90,22 @@ namespace DiffWit
 
         private void MenuFlyoutItem_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
-            var option = ((MenuFlyoutItem)sender).Tag.ToString();
+            var flyoutItem = (MenuFlyoutItem)sender;
+
+            var option = flyoutItem.Tag.ToString();
             if (option == "split")
             {
                 SetDiffViewModel(_splitDiffViewModel);
+
+                SelectedViewIcon.Glyph = "\uF30A";
+                SelectedViewText.Text = "Split";
             }
             else if (option == "unified")
             {
                 SetDiffViewModel(_unifiedDiffViewModel);
+
+                SelectedViewIcon.Glyph = "\uF309";
+                SelectedViewText.Text = "Unified";
             }
         }
     }
