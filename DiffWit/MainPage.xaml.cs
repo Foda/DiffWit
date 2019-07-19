@@ -1,21 +1,14 @@
 ﻿using DiffWit.Utils;
 using DiffWit.ViewModel;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using TextEditor.Diff;
-using TextEditor.Utils;
-using Windows.Storage;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 
 namespace DiffWit
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class MainPage : Page
     {
         private IDiffViewModel _currentDiffViewModel;
@@ -23,89 +16,114 @@ namespace DiffWit
         private SplitDiffViewModel _splitDiffViewModel;
         private UnifiedDiffViewModel _unifiedDiffViewModel;
 
-        private List<Diff> _diffCache = new List<Diff>();
+        private string _fileA = "";
+        private string _fileB = "";
 
         public MainPage()
         {
             this.InitializeComponent();
+
+            BrowseFileA.Click += BrowseFileA_Click;
+            BrowseFileB.Click += BrowseFileB_Click;
+        }
+
+        private async void BrowseFileA_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            var picker = new Windows.Storage.Pickers.FileOpenPicker
+            {
+                ViewMode = Windows.Storage.Pickers.PickerViewMode.List,
+                SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary
+            };
+
+            var pickedFile = await picker.PickSingleFileAsync();
+            if (pickedFile != null)
+            {
+                _fileA = pickedFile.Path;
+            }
+
+            await TryRefreshDiffAsync();
+        }
+
+        private async void BrowseFileB_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            var picker = new Windows.Storage.Pickers.FileOpenPicker
+            {
+                ViewMode = Windows.Storage.Pickers.PickerViewMode.List,
+                SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary
+            };
+
+            var pickedFile = await picker.PickSingleFileAsync();
+            if (pickedFile != null)
+            {
+                _fileB = pickedFile.Path;
+            }
+
+            await TryRefreshDiffAsync();
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
 
+            _unifiedDiffViewModel = new UnifiedDiffViewModel();
+            _splitDiffViewModel = new SplitDiffViewModel();
+
             var commandLineParams = e.Parameter as ParsedCommands;
             if (commandLineParams != null)
             {
-                Loading.IsActive = true;
-
                 var workingDirectory = commandLineParams.FirstOrDefault(param => param.Key == "WorkingDir").Value;
                 var localFile = commandLineParams.FirstOrDefault(param => param.Key == "Local").Value;
                 var remoteFile = commandLineParams.FirstOrDefault(param => param.Key == "Remote").Value;
 
-                var fileA = localFile;
-                var fileB = File.Exists(remoteFile) ? remoteFile : Path.Combine(workingDirectory, remoteFile);
+                _fileA = localFile;
+                _fileB = File.Exists(remoteFile) ? remoteFile : Path.Combine(workingDirectory, remoteFile);
 
-                await GenerateDiffCache(fileA, fileB);
-
-                _unifiedDiffViewModel = new UnifiedDiffViewModel(fileA, fileB, _diffCache);
-                _splitDiffViewModel = new SplitDiffViewModel(fileA, fileB, _diffCache);
-                
-                SetDiffViewModel(_splitDiffViewModel);
-
-                Loading.IsActive = false;
+                await SetDiffViewModel(_splitDiffViewModel);
+            }
+            else
+            {
+                await SetDiffViewModel(_splitDiffViewModel);
             }
         }
 
-        private async Task GenerateDiffCache(string fileA, string fileB)
+        private async Task SetDiffViewModel(IDiffViewModel vm)
         {
-            fileA = fileA.Replace("/", "\\");
-            fileB = fileB.Replace("/", "\\");
+            Loading.IsActive = true;
 
-            var fileAFolder = await StorageFolder.GetFolderFromPathAsync(
-                fileA.Substring(0, fileA.LastIndexOf('\\')));
-
-            var fileBFolder = await StorageFolder.GetFolderFromPathAsync(
-                fileB.Substring(0, fileB.LastIndexOf('\\')));
-
-            var fileAFile = await fileAFolder.GetFileAsync(FileHelper.GetFileName(fileA));
-            var fileBFile = await fileBFolder.GetFileAsync(FileHelper.GetFileName(fileB));
-
-            var fileAText = await Windows.Storage.FileIO.ReadTextAsync(fileAFile);
-            var fileBText = await Windows.Storage.FileIO.ReadTextAsync(fileBFile);
-
-            fileAText = fileAText.Replace("\r\n", "\n");
-            fileBText = fileBText.Replace("\r\n", "\n");
-
-            _diffCache = DiffFactory.GenerateDiffCache(fileAText, fileBText);
-        }
-
-        private void SetDiffViewModel(IDiffViewModel vm)
-        {
             _currentDiffViewModel = vm;
             DataContext = _currentDiffViewModel;
 
-            _currentDiffViewModel.ProcessDiff();
+            await TryRefreshDiffAsync();
+
+            Loading.IsActive = false;
         }
 
-        private void MenuFlyoutItem_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        private async Task TryRefreshDiffAsync()
+        {
+            if (!string.IsNullOrEmpty(_fileA) && !string.IsNullOrEmpty(_fileB))
+            {
+                await _currentDiffViewModel.GenerateDiffAsync(_fileA, _fileB);
+            }
+        }
+
+        private async void MenuFlyoutItem_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
             var flyoutItem = (MenuFlyoutItem)sender;
 
             var option = flyoutItem.Tag.ToString();
             if (option == "split")
             {
-                SetDiffViewModel(_splitDiffViewModel);
-
                 SelectedViewIcon.Glyph = "\uF30A";
                 SelectedViewText.Text = "Split";
+
+                await SetDiffViewModel(_splitDiffViewModel);
             }
             else if (option == "unified")
             {
-                SetDiffViewModel(_unifiedDiffViewModel);
-
                 SelectedViewIcon.Glyph = "\uF309";
                 SelectedViewText.Text = "Unified";
+
+                await SetDiffViewModel(_unifiedDiffViewModel);
             }
         }
     }

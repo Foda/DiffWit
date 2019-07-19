@@ -136,6 +136,7 @@
     <Compile Include="Utils\DiffViewTextColorizer.cs" />
     <Compile Include="Utils\ImplicitDataTemplateConverter.cs" />
     <Compile Include="Utils\VisualTreeHelper.cs" />
+    <Compile Include="ViewModel\BaseDiffViewModel.cs" />
     <Compile Include="ViewModel\IDiffViewModel.cs" />
     <Compile Include="ViewModel\SplitDiffViewModel.cs" />
     <Compile Include="ViewModel\UnifiedDiffViewModel.cs" />

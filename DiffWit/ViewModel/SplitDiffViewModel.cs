@@ -17,19 +17,10 @@ using Windows.Storage;
 
 namespace DiffWit.ViewModel
 {
-    public class SplitDiffViewModel : ReactiveObject, IDiffViewModel
+    public class SplitDiffViewModel : BaseDiffViewModel
     {
-        private List<Diff> _diffCache = new List<Diff>();
         private List<IAnchorPos> _diffAnchors = new List<IAnchorPos>();
         private int _currentChange = 0;
-        
-        public string FileA { get; }
-        public string FileB { get; }
-
-        public string FileExtension
-        {
-            get { return Path.GetExtension(FileA).Remove(0, 1); }
-        }
 
         private TextModel _leftDiffTextModel;
         public TextModel LeftDiffTextModel
@@ -45,24 +36,20 @@ namespace DiffWit.ViewModel
             private set { this.RaiseAndSetIfChanged(ref _rightDiffTextModel, value); }
         }
 
-        public int ChangeCount { get { return _diffCache.Count; } }
-
         public ReactiveCommand<Unit, Unit> ScrollToPreviousChange { get; }
         public ReactiveCommand<Unit, Unit> ScrollToNextChange { get; }
 
-        public SplitDiffViewModel(string fileA, string fileB, List<Diff> diffCache)
+        public SplitDiffViewModel()
         {
-            FileA = fileA;
-            FileB = fileB;
-
-            _diffCache = diffCache;
-
             ScrollToPreviousChange = ReactiveCommand.Create(ScrollToPreviousChange_Impl);
             ScrollToNextChange = ReactiveCommand.Create(ScrollToNextChange_Impl);
         }
 
-        public void ProcessDiff()
+        internal override void ProcessDiff()
         {
+            if (string.IsNullOrEmpty(FileA) || string.IsNullOrEmpty(FileB) || _diffCache == null)
+                return;
+
             var result = DiffFactory.GenerateSplitDiff(_diffCache);
 
             LeftDiffTextModel = result.SideA;

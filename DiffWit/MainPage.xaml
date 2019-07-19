@@ -9,15 +9,21 @@
     xmlns:view="using:DiffWit.View"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Page.Resources>
+        <ResourceDictionary>
+            <x:Double x:Key="TextControlThemeMinHeight">26</x:Double>
+        </ResourceDictionary>
+    </Page.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="80"/>
+            <RowDefinition Height="40"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         
-        <Rectangle HorizontalAlignment="Stretch" VerticalAlignment="Top"
-                   Height="80" Fill="{ThemeResource ThemeAcrylicMain}"
+        <Rectangle HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                   Grid.RowSpan="2" Fill="{ThemeResource ThemeAcrylicMain}"
                    x:Name="RealTitlebar"/>
 
         <TextBlock Style="{ThemeResource CaptionTextBlockStyle}" HorizontalAlignment="Left"
@@ -49,29 +55,65 @@
             </DropDownButton.Flyout>
         </DropDownButton>
 
-        <StackPanel Orientation="Horizontal" Grid.Row="0" HorizontalAlignment="Right"
-                    VerticalAlignment="Bottom" Height="32" Padding="0,0,16,0">
-            <TextBlock VerticalAlignment="Center">
+        <Grid Grid.Row="0" HorizontalAlignment="Right" Width="150" Margin="0,0,8,0"
+              VerticalAlignment="Bottom" Height="32">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="34"/>
+                <ColumnDefinition Width="34"/>
+            </Grid.ColumnDefinitions>
+            
+            <TextBlock VerticalAlignment="Center" Grid.Column="0">
                 <Run Text="Changes: "/> <Run Text="{Binding ChangeCount}"/>
             </TextBlock>
 
-            <Button Style="{ThemeResource ButtonRevealStyle}" Margin="16,0,0,0"
-                    Background="Transparent" Command="{Binding ScrollToPreviousChange}">
+            <Button Style="{ThemeResource ButtonRevealStyle}"
+                    Background="Transparent" Command="{Binding ScrollToPreviousChange}"
+                    Grid.Column="1" HorizontalAlignment="Stretch">
                 <FontIcon Glyph="&#xE014;" FontFamily="Segoe MDL2 Assets" FontSize="14"/>
             </Button>
 
-            <Button Style="{ThemeResource ButtonRevealStyle}" Margin="0,0,0,0"
-                    Background="Transparent" Command="{Binding ScrollToNextChange}">
+            <Button Style="{ThemeResource ButtonRevealStyle}"
+                    Background="Transparent" Command="{Binding ScrollToNextChange}"
+                    Grid.Column="2" HorizontalAlignment="Stretch">
                 <FontIcon Glyph="&#xE015;" FontFamily="Segoe MDL2 Assets" FontSize="14"/>
             </Button>
-        </StackPanel>
+        </Grid>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBox x:Name="DiffFileLeft" HorizontalAlignment="Stretch"
+                     Height="26" BorderThickness="1" FontSize="12"
+                     Grid.Column="0" Margin="9,0,32,0" IsReadOnly="True"
+                     Text="{Binding FileA, FallbackValue='No File Loaded'}"
+                     Padding="8,4,42,0" />
+
+            <Button x:Name="BrowseFileA" Grid.Column="0"
+                    Margin="0,0,33,0" HorizontalAlignment="Right"
+                    Width="32" Height="24" Padding="0,-8,0,0" Content="..."/>
+
+            <TextBox x:Name="DiffFileRight" HorizontalAlignment="Stretch"
+                     Height="26" BorderThickness="1" FontSize="12"
+                     Grid.Column="1" Margin="9,0,8,0" IsReadOnly="True"
+                     Padding="8,4,42,0"
+                     Text="{Binding FileB, FallbackValue='No File Loaded'}"/>
+
+            <Button x:Name="BrowseFileB" Grid.Column="1"
+                    Margin="0,0,9,0" HorizontalAlignment="Right"
+                    Width="32" Height="24" Padding="0,-8,0,0" Content="..."/>
+
+        </Grid>
 
         <ContentControl VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                         VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch"
-                        Grid.Row="1" x:Name="TextMain"
+                        Grid.Row="2" x:Name="TextMain"
                         ContentTemplate="{Binding Converter={StaticResource ImplicitDataTemplateConverter}}"/>
 
-        <ProgressRing Grid.Row="1" HorizontalAlignment="Center"
+        <ProgressRing Grid.Row="2" HorizontalAlignment="Center"
                       Width="64" Height="64"
                       VerticalAlignment="Center" x:Name="Loading"/>
     </Grid>

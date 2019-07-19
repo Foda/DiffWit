@@ -3,13 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TextEditor.Diff;
 
 namespace DiffWit.ViewModel
 {
     public interface IDiffViewModel
     {
-        void ProcessDiff();
-
         int ChangeCount { get; }
+
+        string FileA { get; }
+        string FileB { get; }
+
+        Task GenerateDiffAsync(string fileA, string fileB);
     }
 }

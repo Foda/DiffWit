@@ -14,13 +14,8 @@ using Windows.Storage;
 
 namespace DiffWit.ViewModel
 {
-    public class UnifiedDiffViewModel : ReactiveObject, IDiffViewModel
+    public class UnifiedDiffViewModel : BaseDiffViewModel
     {
-        private List<Diff> _diffCache = new List<Diff>();
-
-        public string FileA { get; }
-        public string FileB { get; }
-
         private TextModel _unifiedDiffTextModel;
         public TextModel UnifiedDiffTextModel
         {
@@ -28,24 +23,20 @@ namespace DiffWit.ViewModel
             private set { this.RaiseAndSetIfChanged(ref _unifiedDiffTextModel, value); }
         }
 
-        public int ChangeCount { get { return _diffCache.Count; } }
-
         public ReactiveCommand<Unit, Unit> ScrollToPreviousChange { get; }
         public ReactiveCommand<Unit, Unit> ScrollToNextChange { get; }
 
-        public UnifiedDiffViewModel(string fileA, string fileB, List<Diff> diffCache)
+        public UnifiedDiffViewModel()
         {
-            FileA = fileA;
-            FileB = fileB;
-            _diffCache = diffCache;
-
-
             ScrollToPreviousChange = ReactiveCommand.Create(ScrollToPreviousChange_Impl);
             ScrollToNextChange = ReactiveCommand.Create(ScrollToNextChange_Impl);
         }
 
-        public void ProcessDiff()
+        internal override void ProcessDiff()
         {
+            if (string.IsNullOrEmpty(FileA) || string.IsNullOrEmpty(FileB) || _diffCache == null)
+                return;
+
             UnifiedDiffTextModel = DiffFactory.GenerateUnifiedDiff(_diffCache);
         }
 
