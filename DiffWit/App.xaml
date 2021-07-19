@@ -9,13 +9,13 @@
 
     <Application.Resources>
         <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+            </ResourceDictionary.MergedDictionaries>
+            
             <Color x:Key="ThemeColorMain">#202527</Color>
             <SolidColorBrush x:Key="ThemeBrushMain" Color="{StaticResource ThemeColorMain}"/>
             
-            <AcrylicBrush x:Key="ThemeAcrylicMain" BackgroundSource="HostBackdrop"
-                          TintColor="{StaticResource ThemeColorMain}" TintOpacity="0.8" 
-                          FallbackColor="{StaticResource ThemeColorMain}"/>
-
             <utils:ImplicitDataTemplateConverter x:Key="ImplicitDataTemplateConverter"/>
 
             <DataTemplate x:Key="SplitDiffViewModel">

@@ -1,23 +1,14 @@
-﻿using Microsoft.Toolkit.Uwp.Helpers;
-using ReactiveUI;
-using System;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using DiffWit.Utils;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reactive;
-using System.Text;
-using System.Threading.Tasks;
 using TextEditor.Diff;
 using TextEditor.Model;
-using TextEditor.Utils;
-using Windows.Storage;
 
 namespace DiffWit.ViewModel
 {
-    public class UnifiedDiffViewModel : ReactiveObject, IDiffViewModel
+    public class UnifiedDiffViewModel : ObservableObject, IDiffViewModel
     {
-        private List<Diff> _diffCache = new List<Diff>();
-
         public string FileA { get; }
         public string FileB { get; }
 
@@ -25,28 +16,36 @@ namespace DiffWit.ViewModel
         public TextModel UnifiedDiffTextModel
         {
             get { return _unifiedDiffTextModel; }
-            private set { this.RaiseAndSetIfChanged(ref _unifiedDiffTextModel, value); }
+            private set { SetProperty(ref _unifiedDiffTextModel, value); }
         }
 
-        public int ChangeCount { get { return _diffCache.Count; } }
+        private int _changeCount;
+        public int ChangeCount
+        {
+            get { return _changeCount; }
+            private set { SetProperty(ref _changeCount, value); }
+        }
 
-        public ReactiveCommand<Unit, Unit> ScrollToPreviousChange { get; }
-        public ReactiveCommand<Unit, Unit> ScrollToNextChange { get; }
+        public RelayCommand ScrollToPreviousChange { get; }
+        public RelayCommand ScrollToNextChange { get; }
 
-        public UnifiedDiffViewModel(string fileA, string fileB, List<Diff> diffCache)
+        public AsyncRelayCommand GenerateDiff { get; }
+
+        public UnifiedDiffViewModel(string fileA, string fileB)
         {
             FileA = fileA;
             FileB = fileB;
-            _diffCache = diffCache;
 
+            ScrollToPreviousChange = new RelayCommand(ScrollToPreviousChange_Impl);
+            ScrollToNextChange = new RelayCommand(ScrollToNextChange_Impl);
 
-            ScrollToPreviousChange = ReactiveCommand.Create(ScrollToPreviousChange_Impl);
-            ScrollToNextChange = ReactiveCommand.Create(ScrollToNextChange_Impl);
-        }
+            GenerateDiff = new AsyncRelayCommand(async () =>
+            {
+                List<Diff> diff = await DiffCacheUtil.GenerateDiffCache(FileA, FileB);
 
-        public void ProcessDiff()
-        {
-            UnifiedDiffTextModel = DiffFactory.GenerateUnifiedDiff(_diffCache);
+                ChangeCount = diff.Count;
+                UnifiedDiffTextModel = DiffFactory.GenerateUnifiedDiff(diff);
+            });
         }
 
         private void ScrollToPreviousChange_Impl()

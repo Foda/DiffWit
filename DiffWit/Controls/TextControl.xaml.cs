@@ -10,8 +10,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
 using TextEditor.Model;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 namespace DiffWit.Controls
 {
@@ -131,7 +131,9 @@ namespace DiffWit.Controls
                     if (Text.GetLine(i) is DiffTextLine diffText)
                     {
                         if (diffText.ChangeType != DiffLineType.Empty)
+                        {
                             return diffText.LineNo;
+                        }
                     }
                 }
 
@@ -144,7 +146,9 @@ namespace DiffWit.Controls
             get
             {
                 if (_parentScrollViewer == null)
+                {
                     return 0;
+                }
 
                 int startLine = (int)(_parentScrollViewer.VerticalOffset / LineHeight);
                 int endLine = (int)Math.Min(
@@ -155,7 +159,7 @@ namespace DiffWit.Controls
                     if (Text.GetLine(i) is DiffTextLine diffText)
                     {
                         if (diffText.ChangeType != DiffLineType.Empty)
-                            return diffText.LineNo;
+                            return i;
                     }
                 }
 
@@ -196,7 +200,9 @@ namespace DiffWit.Controls
         private void canvas_RegionsInvalidated(CanvasVirtualControl sender, CanvasRegionsInvalidatedEventArgs args)
         {
             if (Text == null)
+            {
                 return;
+            }
 
             // Update the diff map
             if (_parentScrollViewer == null)
@@ -220,26 +226,26 @@ namespace DiffWit.Controls
                 }
             }
 
-            if (_language == null)
+            if (_language == null && !string.IsNullOrEmpty(FileExtension))
             {
                 _language = Languages.FindById(FileExtension);
             }
 
-            foreach (var region in args.InvalidatedRegions)
+            foreach (Windows.Foundation.Rect region in args.InvalidatedRegions)
             {
-                using (var ds = sender.CreateDrawingSession(region))
+                using (CanvasDrawingSession ds = sender.CreateDrawingSession(region))
                 {
                     ds.Clear(_defaultBackgroundColor);
-                    
-                    var startLine = (int)Math.Clamp(Math.Floor(region.Top / LineHeight), 0, Text.LineCount);
+
+                    int startLine = (int)Math.Clamp(Math.Floor(region.Top / LineHeight), 0, Text.LineCount);
 
                     // add 2 to the end line count. we want to "overdraw" a bit if the line is going to be cut-off
-                    var endLine = (int)Math.Clamp(Math.Ceiling(region.Bottom / LineHeight) + 2, 0, Text.LineCount);
+                    int endLine = (int)Math.Clamp(Math.Ceiling(region.Bottom / LineHeight) + 2, 0, Text.LineCount);
 
-                    var stringRegion = new StringBuilder();
+                    StringBuilder stringRegion = new StringBuilder();
                     for (int i = startLine; i < endLine; i++)
                     {
-                        var line = Text.GetLine(i);
+                        ITextLine line = Text.GetLine(i);
                         if (line is DiffTextLine diffLine)
                         {
                             if (diffLine.ChangeType == DiffLineType.Empty)

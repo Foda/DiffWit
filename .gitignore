@@ -4,3 +4,5 @@ DiffWit/obj/
 TextEditor.Test.Unit/obj/
 TextEditor/obj/
 TextEditor/bin/
+/DiffWit (Package)/bin/x86/Debug
+/DiffWit (Package)/obj

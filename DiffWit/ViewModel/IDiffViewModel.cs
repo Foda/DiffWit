@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using CommunityToolkit.Mvvm.Input;
 
 namespace DiffWit.ViewModel
 {
     public interface IDiffViewModel
     {
-        void ProcessDiff();
-
+        AsyncRelayCommand GenerateDiff { get; }
         int ChangeCount { get; }
     }
 }

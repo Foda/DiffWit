@@ -1,14 +1,9 @@
-﻿using ColorCode;
-using ColorCode.Styling;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using DiffWit.Utils;
-using Microsoft.Toolkit.Uwp.Helpers;
-using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Reactive;
-using System.Text;
 using System.Threading.Tasks;
 using TextEditor.Diff;
 using TextEditor.Model;
@@ -17,59 +12,73 @@ using Windows.Storage;
 
 namespace DiffWit.ViewModel
 {
-    public class SplitDiffViewModel : ReactiveObject, IDiffViewModel
+    public class SplitDiffViewModel : ObservableObject, IDiffViewModel
     {
-        private List<Diff> _diffCache = new List<Diff>();
-        private List<IAnchorPos> _diffAnchors = new List<IAnchorPos>();
+        private List<Diff> _diffCache = new();
+        private List<IAnchorPos> _diffAnchors = new();
         private int _currentChange = 0;
         
-        public string FileA { get; }
-        public string FileB { get; }
+        public string FileA { get; private set; }
+        public string FileB { get; private set; }
 
-        public string FileExtension
-        {
-            get { return Path.GetExtension(FileA).Remove(0, 1); }
-        }
+        public string FileExtension => Path.GetExtension(FileA).Remove(0, 1);
 
         private TextModel _leftDiffTextModel;
         public TextModel LeftDiffTextModel
         {
             get { return _leftDiffTextModel; }
-            private set { this.RaiseAndSetIfChanged(ref _leftDiffTextModel, value); }
+            private set { SetProperty(ref _leftDiffTextModel, value); }
         }
 
         private TextModel _rightDiffTextModel;
         public TextModel RightDiffTextModel
         {
             get { return _rightDiffTextModel; }
-            private set { this.RaiseAndSetIfChanged(ref _rightDiffTextModel, value); }
+            private set { SetProperty(ref _rightDiffTextModel, value); }
         }
 
-        public int ChangeCount { get { return _diffCache.Count; } }
+        private int _changeCount;
+        public int ChangeCount
+        {
+            get { return _changeCount; }
+            private set { SetProperty(ref _changeCount, value); }
+        }
 
-        public ReactiveCommand<Unit, Unit> ScrollToPreviousChange { get; }
-        public ReactiveCommand<Unit, Unit> ScrollToNextChange { get; }
+        public RelayCommand ScrollToPreviousChange { get; }
+        public RelayCommand ScrollToNextChange { get; }
 
-        public SplitDiffViewModel(string fileA, string fileB, List<Diff> diffCache)
+        public AsyncRelayCommand GenerateDiff { get; }
+
+        public SplitDiffViewModel(string fileA, string fileB)
         {
             FileA = fileA;
             FileB = fileB;
 
-            _diffCache = diffCache;
+            ScrollToPreviousChange = new RelayCommand(ScrollToPreviousChange_Impl);
+            ScrollToNextChange = new RelayCommand(ScrollToNextChange_Impl);
 
-            ScrollToPreviousChange = ReactiveCommand.Create(ScrollToPreviousChange_Impl);
-            ScrollToNextChange = ReactiveCommand.Create(ScrollToNextChange_Impl);
+            GenerateDiff = new AsyncRelayCommand(async () =>
+            {
+                List<Diff> diff = await DiffCacheUtil.GenerateDiffCache(FileA, FileB);
+                SplitDiffModel diffModel = DiffFactory.GenerateSplitDiff(diff);
+
+                ChangeCount = diff.Count;
+                LeftDiffTextModel = diffModel.SideA;
+                RightDiffTextModel = diffModel.SideB;
+                _diffAnchors = diffModel.DiffAnchors;
+            });
         }
 
         public void ProcessDiff()
         {
-            var result = DiffFactory.GenerateSplitDiff(_diffCache);
+            SplitDiffModel result = DiffFactory.GenerateSplitDiff(_diffCache);
 
             LeftDiffTextModel = result.SideA;
             RightDiffTextModel = result.SideB;
             _diffAnchors = result.DiffAnchors;
         }
 
+        
         private void ScrollToPreviousChange_Impl()
         {
             _currentChange--;
@@ -90,7 +99,7 @@ namespace DiffWit.ViewModel
                 _currentChange = 0;
             }
 
-            var anchor = _diffAnchors[_currentChange];
+            IAnchorPos anchor = _diffAnchors[_currentChange];
             ScrollToAnchor(anchor);
         }
 

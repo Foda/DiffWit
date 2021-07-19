@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Windows.UI.Xaml;
+using Microsoft.UI.Xaml;
 
 namespace DiffWit.Utils
 {
@@ -12,7 +12,7 @@ namespace DiffWit.Utils
         public static T FindParent<T>(DependencyObject child) where T : DependencyObject
         {
             //get parent item
-            DependencyObject parentObject = Windows.UI.Xaml.Media.VisualTreeHelper.GetParent(child);
+            DependencyObject parentObject = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(child);
 
             //we've reached the end of the tree
             if (parentObject == null) return null;

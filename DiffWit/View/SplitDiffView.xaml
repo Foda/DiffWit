@@ -2,27 +2,21 @@
     x:Class="DiffWit.View.SplitDiffView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:DiffWit.View"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:DiffWit.Controls"
-    xmlns:toolkit="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
-    
+
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="48" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="64"/>
         </Grid.ColumnDefinitions>
 
-        <ScrollViewer VerticalScrollBarVisibility="Visible" Grid.Row="1"
-                      Grid.Column="0">
+        <ScrollViewer VerticalScrollBarVisibility="Visible" Grid.Column="0">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -45,19 +39,9 @@
             </Grid>
         </ScrollViewer>
 
-        <controls:DiffMapScrollControl Grid.Row="1" Grid.Column="1" x:Name="DiffMapRoot"
+        <controls:DiffMapScrollControl Grid.Column="1" x:Name="DiffMapRoot"
                                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                        LeftTextView="{Binding ElementName=TextRootLeft}"
                                        RightTextView="{Binding ElementName=TextRootRight}"/>
-
-        <toolkit:DropShadowPanel BlurRadius="10" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                 HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
-                                 OffsetX="0" OffsetY="4" Color="Black" ShadowOpacity="0.3"
-                                 Grid.ColumnSpan="2">
-            <Grid Background="#333337">
-                <TextBlock VerticalAlignment="Center" Margin="16,0,0,0" Text="{Binding FileA, FallbackValue=Text}"
-                           Style="{ThemeResource CaptionTextBlockStyle}" HorizontalAlignment="Left"/>
-            </Grid>
-        </toolkit:DropShadowPanel>
     </Grid>
 </UserControl>

@@ -6,7 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:DiffWit.Controls"
-    xmlns:controls1="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
@@ -21,9 +21,9 @@
             <controls:TextControl Text="{Binding UnifiedDiffTextModel}" x:Name="TextRoot"/>
         </ScrollViewer>
 
-        <controls1:DropShadowPanel BlurRadius="10" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                   HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
-                                   OffsetX="0" OffsetY="4" Color="Black" ShadowOpacity="0.3">
+        <toolkit:DropShadowPanel BlurRadius="10" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                 HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
+                                 OffsetX="0" OffsetY="4" Color="Black" ShadowOpacity="0.3">
             <Grid Background="#333337">
                 <TextBlock VerticalAlignment="Center" Margin="16,0,0,0" Text="{Binding FileA, FallbackValue=Text}"
                            Style="{ThemeResource NavigationViewItemHeaderTextStyle}" HorizontalAlignment="Left"/>
@@ -42,6 +42,6 @@
                     </Button>
                 </StackPanel>
             </Grid>
-        </controls1:DropShadowPanel>
+        </toolkit:DropShadowPanel>
     </Grid>
 </UserControl>

@@ -11,9 +11,9 @@ using System.Text;
 using System.Threading.Tasks;
 using TextEditor.Model;
 using Windows.Foundation;
-using Windows.UI;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
+using Microsoft.UI;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 namespace DiffWit.Controls
 {
@@ -72,7 +72,7 @@ namespace DiffWit.Controls
 
         public double RealHeight
         {
-            get { return ActualHeight - 20; }
+            get { return ActualHeight; }
         }
 
         private static void OnTextViewChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -85,38 +85,10 @@ namespace DiffWit.Controls
         {
             this.InitializeComponent();
 
-            CanvasRoot.CreateResources += CanvasRoot_CreateResources;
             CanvasRoot.SizeChanged += (s, e) =>
             {
                 CanvasRoot.Invalidate();
             };
-        }
-
-        private void CanvasRoot_CreateResources(CanvasControl sender, Microsoft.Graphics.Canvas.UI.CanvasCreateResourcesEventArgs args)
-        {
-            args.TrackAsyncAction(CreateResourcesAsync(sender).AsAsyncAction());
-        }
-
-        private async Task CreateResourcesAsync(CanvasControl sender)
-        {
-            if (_loadOutlineChangesTask != null)
-            {
-                await _loadOutlineChangesTask;
-                _loadOutlineChangesTask = null;
-                _requestedOutlineChangesRefresh = false;
-            }
-
-            if (_requestedOutlineChangesRefresh)
-            {
-                // We must grab these objects now and pass them
-                // otherwise we'll run into threading issues
-                var leftText = LeftTextView.Text;
-                var rightText = RightTextView.Text;
-                var height = RealHeight;
-
-                _loadOutlineChangesTask = Task.Run(() => 
-                    UpdateOutlineChanges(sender, leftText, rightText, height));
-            }
         }
 
         public void UpdateTextViews()
@@ -124,17 +96,19 @@ namespace DiffWit.Controls
             if (LeftTextView != null && RightTextView != null)
             {
                 _requestedOutlineChangesRefresh = true;
-
-                UpdateFileSizes();
-
                 CanvasRoot.Invalidate();
             }
         }
 
-        private void UpdateFileSizes()
+        private void UpdateFileSizes(ITextModel leftControl, ITextModel rightControl, double controlHeight)
         {
-            int lineCountOrg = LeftTextView.Text.ValidLineCount;
-            int lineCountCur = RightTextView.Text.ValidLineCount;
+            if (leftControl == null || rightControl == null)
+            {
+                return;
+            }
+
+            int lineCountOrg = leftControl.ValidLineCount;
+            int lineCountCur = rightControl.ValidLineCount;
             int maxLineCount = Math.Max(lineCountOrg, lineCountCur);
 
             double leftHeight = 0;
@@ -144,16 +118,16 @@ namespace DiffWit.Controls
             {
                 if (lineCountOrg == maxLineCount)
                 {
-                    rightHeight += (double)(lineCountOrg - lineCountCur) / maxLineCount * RealHeight / 2.0;
+                    rightHeight += (double)(lineCountOrg - lineCountCur) / maxLineCount * controlHeight / 2.0;
                 }
                 else
                 {
-                    leftHeight += (double)(lineCountCur - lineCountOrg) / maxLineCount * RealHeight / 2.0;
+                    leftHeight += (double)(lineCountCur - lineCountOrg) / maxLineCount * controlHeight / 2.0;
                 }
             }
 
-            double leftOffset = (double)lineCountOrg / maxLineCount * RealHeight;
-            double rightOffset = (double)lineCountCur / maxLineCount * RealHeight;
+            double leftOffset = (double)lineCountOrg / maxLineCount * controlHeight;
+            double rightOffset = (double)lineCountCur / maxLineCount * controlHeight;
 
             _leftFileTop = Math.Floor(leftHeight);
             _rightFileTop = Math.Floor(rightHeight);
@@ -164,6 +138,11 @@ namespace DiffWit.Controls
         private void UpdateOutlineChanges(ICanvasResourceCreator canvas,
             ITextModel leftControl, ITextModel rightControl, double controlHeight)
         {
+            if (leftControl == null || rightControl == null)
+            {
+                return;
+            }
+
             int lineCountOrg = leftControl.ValidLineCount;
             int lineCountCur = rightControl.ValidLineCount;
             int maxLineCount = Math.Max(lineCountOrg, lineCountCur);
@@ -218,11 +197,13 @@ namespace DiffWit.Controls
         {
             using (var ds = args.DrawingSession)
             {
-                if (LeftTextView != null && RightTextView != null)
+                if (LeftTextView != null && RightTextView != null &&
+                    LeftTextView.Text != null && RightTextView.Text != null)
                 {
-                    ds.Clear(Colors.Transparent);
+                    UpdateFileSizes(LeftTextView.Text, RightTextView.Text, ActualHeight);
+                    UpdateOutlineChanges(ds, LeftTextView.Text, RightTextView.Text, ActualHeight);
 
-                    var stroke = new CanvasStrokeStyle();
+                    ds.Clear(Colors.Transparent);
 
                     // Draw file sizes
                     ds.FillRectangle(new Rect(12.0, _leftFileTop, 16.0, _leftFileHeight), _fileSizeColor);
