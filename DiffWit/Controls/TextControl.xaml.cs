@@ -169,6 +169,11 @@ namespace DiffWit.Controls
 
         internal void UpdateText()
         {
+            if (Text == null)
+            {
+                return;
+            }
+
             CanvasRoot.Height = Text.LineCount * LineHeight;
             CanvasRoot.Invalidate();
 

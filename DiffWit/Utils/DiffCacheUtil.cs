@@ -13,6 +13,11 @@ namespace DiffWit.Utils
     {
         public static async Task<List<Diff>> GenerateDiffCache(string fileA, string fileB)
         {
+            if (string.IsNullOrEmpty(fileA) || string.IsNullOrEmpty(fileB))
+            {
+                return new List<Diff>();
+            }
+
             fileA = fileA.Replace("/", "\\");
             fileB = fileB.Replace("/", "\\");
 

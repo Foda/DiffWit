@@ -18,6 +18,9 @@
             
             <utils:ImplicitDataTemplateConverter x:Key="ImplicitDataTemplateConverter"/>
 
+            <utils:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" IsInverse="False"/>
+            <utils:BooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" IsInverse="True"/>
+
             <DataTemplate x:Key="SplitDiffViewModel">
                 <view:SplitDiffView />
             </DataTemplate>

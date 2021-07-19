@@ -2,12 +2,8 @@
     x:Class="DiffWit.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:DiffWit"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:controls="using:DiffWit.Controls"
-    xmlns:view="using:DiffWit.View"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls" 
     xmlns:toolkit="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
@@ -19,9 +15,9 @@
         </Grid.RowDefinitions>
 
         <DropDownButton VerticalAlignment="Center" Grid.Row="0" Background="Transparent"
-                        x:Name="ViewMode">
+                        x:Name="ViewMode" IsEnabled="{Binding HasValidDiff}">
             <StackPanel Orientation="Horizontal">
-                <FontIcon Glyph="&#xF30A;" FontFamily="Fabric MDL2 Assets" x:Name="SelectedViewIcon"/>
+                <FontIcon Glyph="&#xF57C;" FontFamily="Segoe Fluent Icons" x:Name="SelectedViewIcon"/>
                 <TextBlock Text="Split" FontSize="12" Margin="8,0,8,0" VerticalAlignment="Center"
                            x:Name="SelectedViewText"/>
             </StackPanel>
@@ -30,13 +26,13 @@
                 <MenuFlyout Placement="BottomEdgeAlignedLeft">
                     <MenuFlyoutItem Text="Unified" Tag="unified" Click="MenuFlyoutItem_Click">
                         <MenuFlyoutItem.Icon>
-                            <FontIcon Glyph="&#xF309;" FontFamily="Fabric MDL2 Assets" />
+                            <FontIcon Glyph="&#xF57D;" FontFamily="Segoe Fluent Icons" />
                         </MenuFlyoutItem.Icon>
                     </MenuFlyoutItem>
 
                     <MenuFlyoutItem Text="Split" Tag="split" Click="MenuFlyoutItem_Click">
                         <MenuFlyoutItem.Icon>
-                            <FontIcon Glyph="&#xF30A;" FontFamily="Fabric MDL2 Assets" />
+                            <FontIcon Glyph="&#xF57C;" FontFamily="Segoe Fluent Icons" />
                         </MenuFlyoutItem.Icon>
                     </MenuFlyoutItem>
                 </MenuFlyout>
@@ -46,15 +42,15 @@
         <StackPanel Orientation="Horizontal" Grid.Row="0" HorizontalAlignment="Right"
                     VerticalAlignment="Center" Height="32" Padding="0,0,16,0">
             <TextBlock VerticalAlignment="Center">
-                <Run Text="Changes: "/> <Run Text="{Binding CurrentDiffViewModel.ChangeCount}"/>
+                <Run Text="Changes: "/> <Run Text="{Binding CurrentDiffViewModel.ChangeCount, FallbackValue='N/A'}"/>
             </TextBlock>
 
-            <Button Style="{ThemeResource ButtonRevealStyle}" Margin="16,0,0,0"
+            <Button Style="{ThemeResource ButtonRevealStyle}" Margin="16,0,0,0" IsEnabled="{Binding HasValidDiff}"
                     Background="Transparent" Command="{Binding CurrentDiffViewModel.ScrollToPreviousChange}">
                 <FontIcon Glyph="&#xE014;" FontFamily="Segoe MDL2 Assets" FontSize="14"/>
             </Button>
 
-            <Button Style="{ThemeResource ButtonRevealStyle}" Margin="0,0,0,0"
+            <Button Style="{ThemeResource ButtonRevealStyle}" Margin="0,0,0,0" IsEnabled="{Binding HasValidDiff}"
                     Background="Transparent" Command="{Binding CurrentDiffViewModel.ScrollToNextChange}">
                 <FontIcon Glyph="&#xE015;" FontFamily="Segoe MDL2 Assets" FontSize="14"/>
             </Button>
@@ -71,17 +67,31 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBlock VerticalAlignment="Center" Margin="2" Text="{Binding FileA, FallbackValue=Text}"
-                           HorizontalAlignment="Stretch" Grid.Column="0"/>
+                <TextBlock VerticalAlignment="Center" Text="{Binding FileA, TargetNullValue='Browse for a file'}"
+                           HorizontalAlignment="Stretch" Grid.Column="0" Margin="2,2,48,2"/>
 
-                <TextBlock VerticalAlignment="Center" Margin="2" Text="{Binding FileB, FallbackValue=Text}"
-                           HorizontalAlignment="Stretch" Grid.Column="2"/>
+                <Button Grid.Column="0" HorizontalAlignment="Right" Width="40" Content="..."
+                        x:Name="BrowseFileA" Command="{Binding BrowseForFileA}"/>
+
+                <TextBlock VerticalAlignment="Center" Text="{Binding FileB, TargetNullValue='Browse for a file'}"
+                           HorizontalAlignment="Stretch" Grid.Column="2" Margin="2,2,48,2"/>
+
+                <Button Grid.Column="2" HorizontalAlignment="Right" Width="40" Content="..."
+                        x:Name="BrowseFileB" Command="{Binding BrowseForFileB}"/>
             </Grid>
         </toolkit:DropShadowPanel>
 
         <ContentControl VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                         VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch"
                         Grid.Row="2" Content="{Binding CurrentDiffViewModel}"
-                        ContentTemplate="{Binding CurrentDiffViewModel, Converter={StaticResource ImplicitDataTemplateConverter}}"/>
+                        ContentTemplate="{Binding CurrentDiffViewModel, Converter={StaticResource ImplicitDataTemplateConverter}}"
+                        Visibility="{Binding HasValidDiff, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Grid.Row="2" Visibility="{Binding HasValidDiff, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+            <FontIcon Glyph="&#xE9CE;" FontFamily="Segoe Fluent Icons" FontSize="32"/>
+            <TextBlock Text="Select 2 files to compare" HorizontalAlignment="Center"
+                       Style="{ThemeResource SubtitleTextBlockStyle}"/>
+        </StackPanel>
     </Grid>
 </Window>
