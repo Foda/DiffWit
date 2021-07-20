@@ -14,13 +14,11 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="8,0,0,0">
+        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="16,0,0,0">
             <DropDownButton VerticalAlignment="Center" Background="Transparent"
                             x:Name="ViewMode" IsEnabled="{Binding HasValidDiff}">
                 <StackPanel Orientation="Horizontal">
                     <FontIcon Glyph="&#xF57C;" FontFamily="Segoe Fluent Icons" x:Name="SelectedViewIcon"/>
-                    <TextBlock Text="Split" FontSize="12" Margin="8,0,8,0" VerticalAlignment="Center"
-                               x:Name="SelectedViewText"/>
                 </StackPanel>
             
                 <DropDownButton.Flyout>
@@ -41,13 +39,9 @@
             </DropDownButton>
 
             <Button x:Name="SwitchFiles" Command="{Binding SwapFiles}" Background="Transparent"
-                    Margin="8,0,0,0" VerticalAlignment="Center" FontSize="12">
-                <Button.Content>
-                    <TextBlock>
-                        <Run Text="&#xE13C;" FontFamily="Segoe Fluent Icons"/> <Run Text="Swap"/>
-                    </TextBlock>
-                </Button.Content>
-            </Button>
+                    Margin="16,0,0,0" VerticalAlignment="Center" FontFamily="Segoe Fluent Icons"
+                    Content="&#xE13C;" ToolTipService.ToolTip="Swap files" Height="32"
+                    IsEnabled="{Binding HasValidDiff}"/>
         </StackPanel>
 
         <StackPanel Orientation="Horizontal" Grid.Row="0" HorizontalAlignment="Right"
