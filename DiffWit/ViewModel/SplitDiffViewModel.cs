@@ -17,49 +17,50 @@ namespace DiffWit.ViewModel
         private List<Diff> _diffCache = new();
         private List<IAnchorPos> _diffAnchors = new();
         private int _currentChange = 0;
-        
-        public string FileA { get; private set; }
-        public string FileB { get; private set; }
 
-        public string FileExtension => Path.GetExtension(FileA).Remove(0, 1);
+        public string FileExtensionFileA { get; private set; }
+        public string FileExtensionFileB { get; private set; }
 
         private TextModel _leftDiffTextModel;
         public TextModel LeftDiffTextModel
         {
-            get { return _leftDiffTextModel; }
-            private set { SetProperty(ref _leftDiffTextModel, value); }
+            get => _leftDiffTextModel;
+            private set => SetProperty(ref _leftDiffTextModel, value);
         }
 
         private TextModel _rightDiffTextModel;
         public TextModel RightDiffTextModel
         {
-            get { return _rightDiffTextModel; }
-            private set { SetProperty(ref _rightDiffTextModel, value); }
+            get => _rightDiffTextModel;
+            private set => SetProperty(ref _rightDiffTextModel, value);
         }
 
         private int _changeCount;
         public int ChangeCount
         {
-            get { return _changeCount; }
-            private set { SetProperty(ref _changeCount, value); }
+            get => _changeCount;
+            private set => SetProperty(ref _changeCount, value);
         }
 
         public RelayCommand ScrollToPreviousChange { get; }
         public RelayCommand ScrollToNextChange { get; }
 
-        public AsyncRelayCommand GenerateDiff { get; }
+        public AsyncRelayCommand<(string fileA, string fileB)> GenerateDiff { get; }
 
-        public SplitDiffViewModel(string fileA, string fileB)
+        public SplitDiffViewModel()
         {
-            FileA = fileA;
-            FileB = fileB;
-
             ScrollToPreviousChange = new RelayCommand(ScrollToPreviousChange_Impl);
             ScrollToNextChange = new RelayCommand(ScrollToNextChange_Impl);
 
-            GenerateDiff = new AsyncRelayCommand(async () =>
+            GenerateDiff = new AsyncRelayCommand<(string fileA, string fileB)>(async (files) =>
             {
-                List<Diff> diff = await DiffCacheUtil.GenerateDiffCache(FileA, FileB);
+                FileExtensionFileA = Path.GetExtension(files.fileA).Remove(0, 1);
+                FileExtensionFileB = Path.GetExtension(files.fileB).Remove(0, 1);
+
+                List<Diff> diff = await DiffCacheUtil.GenerateDiffCache(
+                    files.fileA,
+                    files.fileB);
+
                 SplitDiffModel diffModel = DiffFactory.GenerateSplitDiff(diff);
 
                 ChangeCount = diff.Count;
@@ -69,16 +70,6 @@ namespace DiffWit.ViewModel
             });
         }
 
-        public void ProcessDiff()
-        {
-            SplitDiffModel result = DiffFactory.GenerateSplitDiff(_diffCache);
-
-            LeftDiffTextModel = result.SideA;
-            RightDiffTextModel = result.SideB;
-            _diffAnchors = result.DiffAnchors;
-        }
-
-        
         private void ScrollToPreviousChange_Impl()
         {
             _currentChange--;
@@ -87,7 +78,7 @@ namespace DiffWit.ViewModel
                 _currentChange = _diffAnchors.Count - 1;
             }
 
-            var anchor = _diffAnchors[_currentChange];
+            IAnchorPos anchor = _diffAnchors[_currentChange];
             ScrollToAnchor(anchor);
         }
 

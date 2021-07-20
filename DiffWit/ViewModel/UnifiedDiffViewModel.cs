@@ -9,9 +9,6 @@ namespace DiffWit.ViewModel
 {
     public class UnifiedDiffViewModel : ObservableObject, IDiffViewModel
     {
-        public string FileA { get; }
-        public string FileB { get; }
-
         private TextModel _unifiedDiffTextModel;
         public TextModel UnifiedDiffTextModel
         {
@@ -29,19 +26,16 @@ namespace DiffWit.ViewModel
         public RelayCommand ScrollToPreviousChange { get; }
         public RelayCommand ScrollToNextChange { get; }
 
-        public AsyncRelayCommand GenerateDiff { get; }
+        public AsyncRelayCommand<(string fileA, string fileB)> GenerateDiff { get; }
 
-        public UnifiedDiffViewModel(string fileA, string fileB)
+        public UnifiedDiffViewModel()
         {
-            FileA = fileA;
-            FileB = fileB;
-
             ScrollToPreviousChange = new RelayCommand(ScrollToPreviousChange_Impl);
             ScrollToNextChange = new RelayCommand(ScrollToNextChange_Impl);
 
-            GenerateDiff = new AsyncRelayCommand(async () =>
+            GenerateDiff = new AsyncRelayCommand<(string fileA, string fileB)>(async (files) =>
             {
-                List<Diff> diff = await DiffCacheUtil.GenerateDiffCache(FileA, FileB);
+                List<Diff> diff = await DiffCacheUtil.GenerateDiffCache(files.fileA, files.fileB);
 
                 ChangeCount = diff.Count;
                 UnifiedDiffTextModel = DiffFactory.GenerateUnifiedDiff(diff);

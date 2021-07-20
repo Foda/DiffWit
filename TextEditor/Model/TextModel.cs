@@ -26,7 +26,6 @@ namespace TextEditor.Model
             }
         }
 
-
         public event EventHandler<ITextLine> ScrollToLineRequested;
 
         public ITextLine GetLine(int index)

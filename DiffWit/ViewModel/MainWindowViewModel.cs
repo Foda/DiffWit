@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using DiffWit.Utils;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -33,6 +34,13 @@ namespace DiffWit.ViewModel
             }
         }
 
+        private string _fileAName;
+        public string FileAName
+        {
+            get => _fileAName;
+            private set => SetProperty(ref _fileAName, value);
+        }
+
         private string _fileB;
         public string FileB
         {
@@ -44,16 +52,18 @@ namespace DiffWit.ViewModel
             }
         }
 
-        public bool HasValidDiff
+        private string _fileBName;
+        public string FileBName
         {
-            get
-            {
-                return !string.IsNullOrEmpty(FileA) && !string.IsNullOrEmpty(FileB);
-            }
+            get => _fileBName;
+            private set => SetProperty(ref _fileBName, value);
         }
+
+        public bool HasValidDiff => !string.IsNullOrEmpty(FileA) && !string.IsNullOrEmpty(FileB);
 
         public AsyncRelayCommand BrowseForFileA { get; }
         public AsyncRelayCommand BrowseForFileB { get; }
+        public AsyncRelayCommand SwapFiles { get; }
 
         private SplitDiffViewModel _splitDiffViewModel;
         private UnifiedDiffViewModel _unifiedDiffViewModel;
@@ -61,6 +71,11 @@ namespace DiffWit.ViewModel
         public MainWindowViewModel(MainWindow parentWindow)
         {
             _mainWindow = parentWindow;
+
+            _unifiedDiffViewModel = new UnifiedDiffViewModel();
+            _splitDiffViewModel = new SplitDiffViewModel();
+
+            CurrentDiffViewModel = _splitDiffViewModel;
 
             BrowseForFileA = new AsyncRelayCommand(
                 async () =>
@@ -81,6 +96,12 @@ namespace DiffWit.ViewModel
                     {
                         await RefreshDiff(FileA, newFile);
                     }
+                });
+
+            SwapFiles = new AsyncRelayCommand(
+                async () =>
+                {
+                    await RefreshDiff(FileB, FileA);
                 });
         }
 
@@ -105,12 +126,13 @@ namespace DiffWit.ViewModel
             FileA = fileA;
             FileB = fileB;
 
-            _unifiedDiffViewModel = new UnifiedDiffViewModel(FileA, FileB);
-            _splitDiffViewModel = new SplitDiffViewModel(FileA, FileB);
+            FileAName = Path.GetFileName(FileA);
+            FileBName = Path.GetFileName(FileB);
 
-            CurrentDiffViewModel = _splitDiffViewModel;
-
-            await CurrentDiffViewModel.GenerateDiff.ExecuteAsync(null);
+            if (!string.IsNullOrEmpty(FileA) && !string.IsNullOrEmpty(FileB))
+            {
+                await CurrentDiffViewModel.GenerateDiff.ExecuteAsync((FileA, FileB));
+            }
         }
     }
 }

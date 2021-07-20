@@ -141,17 +141,17 @@ namespace TextEditor.Diff
             // removal on our side
             var emptyTextLine = new DiffTextLine("", DiffLineType.Empty);
 
-            int leftLineNo = 0;
-            int rightLineNo = 0;
+            int leftLineNo = 1;
+            int rightLineNo = 1;
 
             DiffTextLine leftLine = null;
             DiffTextLine rightLine = null;
 
             // Make sure we visit every line 
-            while (leftLineNo < sideABuffer.Count && rightLineNo < sideBBuffer.Count)
+            while (leftLineNo < sideABuffer.Count || rightLineNo < sideBBuffer.Count)
             {
-                leftLine = leftLineNo < sideABuffer.Count ? sideABuffer[leftLineNo] : null;
-                rightLine = rightLineNo < sideBBuffer.Count ? sideBBuffer[rightLineNo] : null;
+                leftLine = leftLineNo < sideABuffer.Count ? sideABuffer[leftLineNo - 1] : null;
+                rightLine = rightLineNo < sideBBuffer.Count ? sideBBuffer[rightLineNo - 1] : null;
                 
                 if (leftLine == null && rightLine != null)
                 {

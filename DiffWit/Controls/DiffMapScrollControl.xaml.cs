@@ -19,7 +19,9 @@ namespace DiffWit.Controls
 {
     public sealed partial class DiffMapScrollControl : UserControl
     {
-        private Windows.UI.Color _fileSizeColor = Windows.UI.Color.FromArgb(255, 37, 41, 37);
+        private Windows.UI.Color _backgroundColor = Windows.UI.Color.FromArgb(255, 39, 39, 39);
+
+        private Windows.UI.Color _fileSizeColor = Windows.UI.Color.FromArgb(255, 68, 68, 68);
         private Windows.UI.Color _lassoColor = Windows.UI.Color.FromArgb(255, 165, 165, 165);
 
         private Windows.UI.Color _addedBackgroundColor = Windows.UI.Color.FromArgb(255, 60, 193, 160);
@@ -32,9 +34,6 @@ namespace DiffWit.Controls
 
         private CanvasCachedGeometry _outlineChangesAdded;
         private CanvasCachedGeometry _outlineChangesRemoved;
-
-        private bool _requestedOutlineChangesRefresh = false;
-        private Task _loadOutlineChangesTask;
 
         public static readonly DependencyProperty LeftTextViewProperty =
             DependencyProperty.Register(nameof(LeftTextView), typeof(TextControl), typeof(DiffMapScrollControl),
@@ -95,7 +94,6 @@ namespace DiffWit.Controls
         {
             if (LeftTextView != null && RightTextView != null)
             {
-                _requestedOutlineChangesRefresh = true;
                 CanvasRoot.Invalidate();
             }
         }
@@ -203,7 +201,7 @@ namespace DiffWit.Controls
                     UpdateFileSizes(LeftTextView.Text, RightTextView.Text, ActualHeight);
                     UpdateOutlineChanges(ds, LeftTextView.Text, RightTextView.Text, ActualHeight);
 
-                    ds.Clear(Colors.Transparent);
+                    ds.Clear(_backgroundColor);
 
                     // Draw file sizes
                     ds.FillRectangle(new Rect(12.0, _leftFileTop, 16.0, _leftFileHeight), _fileSizeColor);
@@ -222,14 +220,14 @@ namespace DiffWit.Controls
                     var leftTop = (float)Math.Max(Math.Floor((float)LeftTextView.VisibleTopLine / maxLineCount * RealHeight + _leftFileTop), _leftFileTop);
 
                     var leftBottomOffset = (float)Math.Min(
-                        Math.Ceiling((float)LeftTextView.VisibleBottomLine / maxLineCount * RealHeight + _leftFileTop), 
+                        Math.Ceiling((float)LeftTextView.VisibleBottomLine / maxLineCount * RealHeight + _leftFileTop),
                         _leftFileTop + _leftFileHeight);
                     
                     // Right side
                     var rightTop = (float)Math.Max(Math.Floor((float)RightTextView.VisibleTopLine / maxLineCount * RealHeight + _rightFileTop), _rightFileTop);
 
                     var rightBottomOffset = (float)Math.Min(
-                        Math.Ceiling((float)RightTextView.VisibleBottomLine / maxLineCount * RealHeight + _rightFileTop), 
+                        Math.Ceiling((float)RightTextView.VisibleBottomLine / maxLineCount * RealHeight + _rightFileTop),
                         _rightFileTop + _rightFileHeight);
 
                     // Visible area outline

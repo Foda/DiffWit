@@ -20,7 +20,8 @@ namespace DiffWit.Controls
         private DiffViewTextColorizer _colorizer = new DiffViewTextColorizer(StyleDictionary.DefaultDark);
         private ILanguage _language;
 
-        private Windows.UI.Color _defaultBackgroundColor = Windows.UI.Color.FromArgb(255, 30, 30, 30);
+        // Note: colors are for dark theme
+        private Windows.UI.Color _defaultBackgroundColor = Windows.UI.Color.FromArgb(255, 46, 46, 46);
         private Windows.UI.Color _defaultForegroundColor = Windows.UI.Color.FromArgb(255, 245, 245, 245);
 
         private Windows.UI.Color _addedBackgroundColor = Windows.UI.Color.FromArgb(255, 21, 53, 44);
@@ -35,8 +36,7 @@ namespace DiffWit.Controls
         private CanvasSolidColorBrush _removedForegroundBrush;
         private CanvasLinearGradientBrush _nullBrush;
 
-        private float LineHeight = 14.05078125f;
-        private const int WidthPadding = 8;
+        private readonly float LineHeight = 14.05078125f;
 
         private CanvasTextFormat _textFormat;
         private ScrollViewer _parentScrollViewer;
@@ -159,7 +159,7 @@ namespace DiffWit.Controls
                     if (Text.GetLine(i) is DiffTextLine diffText)
                     {
                         if (diffText.ChangeType != DiffLineType.Empty)
-                            return i;
+                            return diffText.LineNo;
                     }
                 }
 

@@ -15,7 +15,10 @@
             
             <Color x:Key="ThemeColorMain">#202527</Color>
             <SolidColorBrush x:Key="ThemeBrushMain" Color="{StaticResource ThemeColorMain}"/>
-            
+
+            <SolidColorBrush x:Key="FileNameHeaderBrush" Color="#202020"/>
+            <SolidColorBrush x:Key="ContentBorderBrush" Color="#1D1D1D"/>
+
             <utils:ImplicitDataTemplateConverter x:Key="ImplicitDataTemplateConverter"/>
 
             <utils:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" IsInverse="False"/>

@@ -1,5 +1,9 @@
 ﻿using DiffWit.ViewModel;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Media.Imaging;
+using System;
+using Windows.ApplicationModel.DataTransfer;
+using Windows.Storage;
 
 namespace DiffWit
 {

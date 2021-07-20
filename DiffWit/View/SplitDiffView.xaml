@@ -27,15 +27,15 @@
                 <!-- Left -->
                 <controls:TextControl Text="{Binding LeftDiffTextModel}" Grid.Row="1" x:Name="TextRootLeft"
                                       Grid.Column="0" DiffMap="{Binding ElementName=DiffMapRoot}"
-                                      FileExtension="{Binding FileExtension}"/>
+                                      FileExtension="{Binding FileExtensionFileA}"/>
 
                 <toolkit:GridSplitter Grid.Column="1" Width="4" VerticalAlignment="Stretch"
-                                      ResizeDirection="Auto" Background="#333333"/>
+                                      ResizeDirection="Auto" Background="{StaticResource ContentBorderBrush}"/>
 
                 <!-- Right -->
                 <controls:TextControl Text="{Binding RightDiffTextModel}" Grid.Row="1" x:Name="TextRootRight"
                                       Grid.Column="2" DiffMap="{Binding ElementName=DiffMapRoot}"
-                                      FileExtension="{Binding FileExtension}"/>
+                                      FileExtension="{Binding FileExtensionFileB}"/>
             </Grid>
         </ScrollViewer>
 

@@ -7,37 +7,48 @@
     xmlns:toolkit="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
-    <Grid x:Name="MainPage">
+    <Grid x:Name="MainPage" Background="#272727">
         <Grid.RowDefinitions>
             <RowDefinition Height="40"/>
-            <RowDefinition Height="40"/>
+            <RowDefinition Height="50"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <DropDownButton VerticalAlignment="Center" Grid.Row="0" Background="Transparent"
-                        x:Name="ViewMode" IsEnabled="{Binding HasValidDiff}">
-            <StackPanel Orientation="Horizontal">
-                <FontIcon Glyph="&#xF57C;" FontFamily="Segoe Fluent Icons" x:Name="SelectedViewIcon"/>
-                <TextBlock Text="Split" FontSize="12" Margin="8,0,8,0" VerticalAlignment="Center"
-                           x:Name="SelectedViewText"/>
-            </StackPanel>
+        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="8,0,0,0">
+            <DropDownButton VerticalAlignment="Center" Background="Transparent"
+                            x:Name="ViewMode" IsEnabled="{Binding HasValidDiff}">
+                <StackPanel Orientation="Horizontal">
+                    <FontIcon Glyph="&#xF57C;" FontFamily="Segoe Fluent Icons" x:Name="SelectedViewIcon"/>
+                    <TextBlock Text="Split" FontSize="12" Margin="8,0,8,0" VerticalAlignment="Center"
+                               x:Name="SelectedViewText"/>
+                </StackPanel>
             
-            <DropDownButton.Flyout>
-                <MenuFlyout Placement="BottomEdgeAlignedLeft">
-                    <MenuFlyoutItem Text="Unified" Tag="unified" Click="MenuFlyoutItem_Click">
-                        <MenuFlyoutItem.Icon>
-                            <FontIcon Glyph="&#xF57D;" FontFamily="Segoe Fluent Icons" />
-                        </MenuFlyoutItem.Icon>
-                    </MenuFlyoutItem>
+                <DropDownButton.Flyout>
+                    <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                        <MenuFlyoutItem Text="Unified" Tag="unified" Click="MenuFlyoutItem_Click">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="&#xF57D;" FontFamily="Segoe Fluent Icons" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
 
-                    <MenuFlyoutItem Text="Split" Tag="split" Click="MenuFlyoutItem_Click">
-                        <MenuFlyoutItem.Icon>
-                            <FontIcon Glyph="&#xF57C;" FontFamily="Segoe Fluent Icons" />
-                        </MenuFlyoutItem.Icon>
-                    </MenuFlyoutItem>
-                </MenuFlyout>
-            </DropDownButton.Flyout>
-        </DropDownButton>
+                        <MenuFlyoutItem Text="Split" Tag="split" Click="MenuFlyoutItem_Click">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="&#xF57C;" FontFamily="Segoe Fluent Icons" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                    </MenuFlyout>
+                </DropDownButton.Flyout>
+            </DropDownButton>
+
+            <Button x:Name="SwitchFiles" Command="{Binding SwapFiles}" Background="Transparent"
+                    Margin="8,0,0,0" VerticalAlignment="Center" FontSize="12">
+                <Button.Content>
+                    <TextBlock>
+                        <Run Text="&#xE13C;" FontFamily="Segoe Fluent Icons"/> <Run Text="Swap"/>
+                    </TextBlock>
+                </Button.Content>
+            </Button>
+        </StackPanel>
 
         <StackPanel Orientation="Horizontal" Grid.Row="0" HorizontalAlignment="Right"
                     VerticalAlignment="Center" Height="32" Padding="0,0,16,0">
@@ -56,39 +67,36 @@
             </Button>
         </StackPanel>
 
-        <toolkit:DropShadowPanel BlurRadius="10" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                 HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
-                                 OffsetX="0" OffsetY="4" Color="Black" ShadowOpacity="0.3"
-                                 Grid.ColumnSpan="2">
-            <Grid Background="#333337" Padding="0,0,64,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="4"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+        <Grid Background="{StaticResource FileNameHeaderBrush}" Margin="8,0,8,0" Grid.Row="1"
+              BorderBrush="{StaticResource ContentBorderBrush}" CornerRadius="8,8,0,0" BorderThickness="1,1,1,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="4"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
-                <TextBlock VerticalAlignment="Center" Text="{Binding FileA, TargetNullValue='Browse for a file'}"
-                           HorizontalAlignment="Stretch" Grid.Column="0" Margin="2,2,48,2"/>
+            <Button Grid.Column="0" HorizontalAlignment="Center"
+                    Content="{Binding FileAName, TargetNullValue='Browse for a file'}"
+                    x:Name="BrowseFileA" Command="{Binding BrowseForFileA}"/>
+            
+            <Button Grid.Column="2" HorizontalAlignment="Center"
+                    Content="{Binding FileBName, TargetNullValue='Browse for a file'}"
+                    x:Name="BrowseFileB" Command="{Binding BrowseForFileB}" />
+        </Grid>
 
-                <Button Grid.Column="0" HorizontalAlignment="Right" Width="40" Content="..."
-                        x:Name="BrowseFileA" Command="{Binding BrowseForFileA}"/>
+        <Border Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                CornerRadius="0,0,8,8" Grid.Column="0" Margin="8,0,8,8"
+                BorderThickness="1" BorderBrush="{StaticResource ContentBorderBrush}"
+                Background="#2E2E2E">
+            <ContentControl VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                            VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                            Content="{Binding CurrentDiffViewModel}"
+                            ContentTemplate="{Binding CurrentDiffViewModel, Converter={StaticResource ImplicitDataTemplateConverter}}"
+                            Visibility="{Binding HasValidDiff, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+        </Border>
 
-                <TextBlock VerticalAlignment="Center" Text="{Binding FileB, TargetNullValue='Browse for a file'}"
-                           HorizontalAlignment="Stretch" Grid.Column="2" Margin="2,2,48,2"/>
-
-                <Button Grid.Column="2" HorizontalAlignment="Right" Width="40" Content="..."
-                        x:Name="BrowseFileB" Command="{Binding BrowseForFileB}"/>
-            </Grid>
-        </toolkit:DropShadowPanel>
-
-        <ContentControl VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                        VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch"
-                        Grid.Row="2" Content="{Binding CurrentDiffViewModel}"
-                        ContentTemplate="{Binding CurrentDiffViewModel, Converter={StaticResource ImplicitDataTemplateConverter}}"
-                        Visibility="{Binding HasValidDiff, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-
-        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center"
-                    Grid.Row="2" Visibility="{Binding HasValidDiff, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="2"
+                    Visibility="{Binding HasValidDiff, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
             <FontIcon Glyph="&#xE9CE;" FontFamily="Segoe Fluent Icons" FontSize="32"/>
             <TextBlock Text="Select 2 files to compare" HorizontalAlignment="Center"
                        Style="{ThemeResource SubtitleTextBlockStyle}"/>

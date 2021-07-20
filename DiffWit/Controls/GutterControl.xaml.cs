@@ -93,7 +93,7 @@ namespace DiffWit.Controls
                             var textLine = Text.GetLine(i);
                             if (textLine != null && textLine is DiffTextLine diffLine)
                             {
-                                stringRegion.AppendLine(diffLine.LineNo > -1 ? (diffLine.LineNo + 1).ToString() : "");
+                                stringRegion.AppendLine(diffLine.LineNo > -1 ? (diffLine.LineNo).ToString() : "");
                             }
                         }
                     }

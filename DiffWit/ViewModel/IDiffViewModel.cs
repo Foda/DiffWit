@@ -4,7 +4,7 @@ namespace DiffWit.ViewModel
 {
     public interface IDiffViewModel
     {
-        AsyncRelayCommand GenerateDiff { get; }
+        AsyncRelayCommand<(string fileA, string fileB)> GenerateDiff { get; }
         int ChangeCount { get; }
     }
 }
