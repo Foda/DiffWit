@@ -5,6 +5,13 @@ using System.Text;
 
 namespace TextEditor.Utils
 {
+    public enum LineEndingType
+    {
+        Unknown,
+        Win32,
+        Unix
+    }
+
     public static class FileHelper
     {
         private const int TAB_TO_SPACE_COUNT = 4;
@@ -93,6 +100,46 @@ namespace TextEditor.Utils
             var stdpath = repoRelativeFilename.Replace('/', '\\');
 
             return CombinePath(path, stdpath);
+        }
+
+        /// <summary>
+        /// Gets the next line from a string, starting at a given position
+        /// The returned string doesn't include the line ending, but we return
+        /// what kind it was. The next point to read from is passed back in nextLineStart
+        /// </summary>
+        /// <param name="diff"></param>
+        /// <param name="start"></param>
+        /// <param name="le"></param>
+        /// <param name="nextLineStart"></param>
+        /// <returns></returns>
+        public static string GetNextLineFromString(string diff, int start, out LineEndingType le, out int nextLineStart)
+        {
+            int pos = diff.Length;
+
+            le = LineEndingType.Unknown;
+            nextLineStart = diff.Length;
+
+            int windowsLineEndingPos = diff.IndexOf("\r\n", start);
+            int unixLineEnding = diff.IndexOf('\n', start);
+
+            // make sure we get the closest line ending value
+            if (windowsLineEndingPos != -1 &&
+                windowsLineEndingPos < unixLineEnding &&
+                windowsLineEndingPos + 1 < diff.Length)
+            {
+                le = LineEndingType.Win32;
+                nextLineStart = windowsLineEndingPos + 2;
+                pos = windowsLineEndingPos;
+            }
+            else if (unixLineEnding != -1)
+            {
+                le = LineEndingType.Unix;
+                nextLineStart = unixLineEnding + 1;
+                pos = unixLineEnding;
+            }
+
+            int len = pos - start;
+            return len > 0 ? diff.Substring(start, len) : string.Empty;
         }
     }
 }

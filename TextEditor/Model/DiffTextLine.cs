@@ -35,6 +35,19 @@ namespace TextEditor.Model
             }
         }
 
+        private int _beforeLineNo = -1;
+        public int BeforeLineNo
+        {
+            get
+            {
+                if (ChangeType == DiffLineType.Empty)
+                    return -1;
+
+                return _beforeLineNo;
+            }
+            set { _beforeLineNo = value; }
+        }
+
         private int _lineNo = -1;
         public int LineNo
         {

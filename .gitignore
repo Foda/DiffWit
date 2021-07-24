@@ -6,3 +6,5 @@ TextEditor/obj/
 TextEditor/bin/
 /DiffWit (Package)/bin/x86/Debug
 /DiffWit (Package)/obj
+/TextEditor.Tests/bin/Debug/net5.0-windows10.0.18362
+/TextEditor.Tests/obj

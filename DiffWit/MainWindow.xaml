@@ -7,7 +7,7 @@
     xmlns:toolkit="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
-    <Grid x:Name="MainPage" Background="#272727">
+    <Grid x:Name="MainPage" Background="{ThemeResource WindowBackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="40"/>
             <RowDefinition Height="50"/>
@@ -62,7 +62,7 @@
         </StackPanel>
 
         <Grid Background="{StaticResource FileNameHeaderBrush}" Margin="8,0,8,0" Grid.Row="1"
-              BorderBrush="{StaticResource ContentBorderBrush}" CornerRadius="8,8,0,0" BorderThickness="1,1,1,0">
+              BorderBrush="{ThemeResource CardBorderBrush}" CornerRadius="8,8,0,0" BorderThickness="1,1,1,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="4"/>
@@ -80,7 +80,7 @@
 
         <Border Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                 CornerRadius="0,0,8,8" Grid.Column="0" Margin="8,0,8,8"
-                BorderThickness="1" BorderBrush="{StaticResource ContentBorderBrush}"
+                BorderThickness="1" BorderBrush="{ThemeResource CardBorderBrush}"
                 Background="#2E2E2E">
             <ContentControl VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                             VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch"

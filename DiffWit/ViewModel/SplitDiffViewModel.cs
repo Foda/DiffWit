@@ -57,9 +57,7 @@ namespace DiffWit.ViewModel
                 FileExtensionFileA = Path.GetExtension(files.fileA).Remove(0, 1);
                 FileExtensionFileB = Path.GetExtension(files.fileB).Remove(0, 1);
 
-                List<Diff> diff = await DiffCacheUtil.GenerateDiffCache(
-                    files.fileA,
-                    files.fileB);
+                List<Diff> diff = await DiffCacheUtil.GenerateDiffCache(files.fileA, files.fileB);
 
                 SplitDiffModel diffModel = DiffFactory.GenerateSplitDiff(diff);
 

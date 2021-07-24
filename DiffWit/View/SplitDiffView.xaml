@@ -30,7 +30,7 @@
                                       FileExtension="{Binding FileExtensionFileA}"/>
 
                 <toolkit:GridSplitter Grid.Column="1" Width="4" VerticalAlignment="Stretch"
-                                      ResizeDirection="Auto" Background="{StaticResource ContentBorderBrush}"/>
+                                      ResizeDirection="Auto" Background="{ThemeResource DividerBrush}"/>
 
                 <!-- Right -->
                 <controls:TextControl Text="{Binding RightDiffTextModel}" Grid.Row="1" x:Name="TextRootRight"

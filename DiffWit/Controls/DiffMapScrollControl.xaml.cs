@@ -152,14 +152,20 @@ namespace DiffWit.Controls
             var addedGeo = new List<CanvasGeometry>();
 
             // Draw removals
+            int lineNo = 0;
             for (int i = 0; i < leftControl.LineCount; i++)
             {
                 var textLine = leftControl.GetLine(i);
                 if (textLine is DiffTextLine diffLine)
                 {
+                    if (diffLine.ChangeType != DiffLineType.Empty)
+                    {
+                        lineNo++;
+                    }
+
                     if (diffLine.ChangeType == DiffLineType.Remove)
                     {
-                        int ypos = (int)((double)diffLine.LineNo / maxLineCount * controlHeight);
+                        int ypos = (int)((double)lineNo / maxLineCount * controlHeight);
 
                         removedGeo.Add(CanvasGeometry.CreateRectangle(canvas,
                             new Rect(12.0, ypos + (int)_leftFileTop, 16.0, singleOrgLineHeight + 1)));
@@ -167,15 +173,21 @@ namespace DiffWit.Controls
                 }
             }
 
+            lineNo = 0;
             for (int i = 0; i < rightControl.LineCount; i++)
             {
                 var textLine = rightControl.GetLine(i);
 
                 if (textLine is DiffTextLine diffLine)
                 {
+                    if (diffLine.ChangeType != DiffLineType.Empty)
+                    {
+                        lineNo++;
+                    }
+
                     if (diffLine.ChangeType == DiffLineType.Insert)
                     {
-                        int ypos = (int)((double)diffLine.LineNo / maxLineCount * controlHeight);
+                        int ypos = (int)((double)lineNo / maxLineCount * controlHeight);
 
                         addedGeo.Add(CanvasGeometry.CreateRectangle(canvas,
                             new Rect(40.0, ypos + (int)_rightFileTop, 16.0, singleCurLineHeight + 1)));

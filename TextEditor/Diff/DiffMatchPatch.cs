@@ -428,10 +428,10 @@ namespace TextEditor.Diff
                                          DateTime deadline)
         {
             // Scan the text on a line-by-line basis first.
-            Object[] a = diff_linesToChars(text1, text2);
-            text1 = (string)a[0];
-            text2 = (string)a[1];
-            List<string> linearray = (List<string>)a[2];
+            (string chars1, string chars2, List<string> lines) a = diff_linesToChars(text1, text2);
+            text1 = a.chars1;
+            text2 = a.chars2;
+            List<string> linearray = a.lines;
 
             List<Diff> diffs = diff_main(text1, text2, false, deadline);
 
@@ -671,7 +671,7 @@ namespace TextEditor.Diff
          *     encoded text2 and the List of unique strings.  The zeroth element
          *     of the List of unique strings is intentionally blank.
          */
-        public Object[] diff_linesToChars(string text1, string text2)
+        public (string chars1, string chars2, List<string> lines) diff_linesToChars(string text1, string text2)
         {
             List<string> lineArray = new List<string>();
             Dictionary<string, int> lineHash = new Dictionary<string, int>();
@@ -685,7 +685,7 @@ namespace TextEditor.Diff
             // Allocate 2/3rds of the space for text1, the rest for text2.
             string chars1 = diff_linesToCharsMunge(text1, lineArray, lineHash, 40000);
             string chars2 = diff_linesToCharsMunge(text2, lineArray, lineHash, 65535);
-            return new Object[] { chars1, chars2, lineArray };
+            return (chars1, chars2, lineArray);
         }
 
         /**

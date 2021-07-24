@@ -13,11 +13,35 @@
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
             </ResourceDictionary.MergedDictionaries>
             
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#EFF3F9" />
+                    <SolidColorBrush x:Key="LayerBackgroundBrush" Color="#F9F9F9" />
+
+                    <SolidColorBrush x:Key="CardBackgroundBrush" Color="#E8E8E8" />
+                    <SolidColorBrush x:Key="CardBackgroundSecondaryBrush" Color="#FAFAFA" />
+                    <SolidColorBrush x:Key="CardBorderBrush" Color="#F0F0F0" />
+
+                    <SolidColorBrush x:Key="DividerBrush" Color="#F9F9F9" />
+
+                    <SolidColorBrush x:Key="FileNameHeaderBrush" Color="#202020"/>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#202020" />
+                    <SolidColorBrush x:Key="LayerBackgroundBrush" Color="#333333" />
+
+                    <SolidColorBrush x:Key="CardBackgroundBrush" Color="#373737" />
+                    <SolidColorBrush x:Key="CardBackgroundSecondaryBrush" Color="#333333" />
+                    <SolidColorBrush x:Key="CardBorderBrush" Color="#282828" />
+
+                    <SolidColorBrush x:Key="DividerBrush" Color="#3D3D3D" />
+
+                    <SolidColorBrush x:Key="FileNameHeaderBrush" Color="#3F3F3F"/>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+
             <Color x:Key="ThemeColorMain">#202527</Color>
             <SolidColorBrush x:Key="ThemeBrushMain" Color="{StaticResource ThemeColorMain}"/>
-
-            <SolidColorBrush x:Key="FileNameHeaderBrush" Color="#202020"/>
-            <SolidColorBrush x:Key="ContentBorderBrush" Color="#1D1D1D"/>
 
             <utils:ImplicitDataTemplateConverter x:Key="ImplicitDataTemplateConverter"/>
 
